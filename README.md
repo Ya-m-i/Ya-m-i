@@ -5,7 +5,8 @@
       <td align="center" valign="middle">
        <h1>Im Kyzz, Full Stack Developer</h1>
        <p>Thinking in logic. Building in code.</p>
-        <br>
+        <br><br>
+       <h3>Tools</h3>
         <table>
           <tr>
             <td align="center" colspan="4" style="border: none;"><strong>MERN STACK</strong></td>
