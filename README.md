@@ -1,6 +1,6 @@
 ## Yami
 <div align="center">
-  <table>
+  <table border="0">
     <tr>
       <td align="center" valign="middle">
        <h1>Im Kyzz, Full Stack Developer</h1>
