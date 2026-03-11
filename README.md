@@ -1,4 +1,6 @@
-## Hi there 👋
+## FULL STACK DEVELOPER
+![RM (1)](https://github.com/user-attachments/assets/b853b396-ed53-4ba4-af62-a50413a24d32)
+
 
 <!--
 **Ya-m-i/Ya-m-i** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
