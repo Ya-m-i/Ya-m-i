@@ -1,6 +1,20 @@
-## FULL STACK DEVELOPER
-![RM (1)](https://github.com/user-attachments/assets/b853b396-ed53-4ba4-af62-a50413a24d32)
+## Yami
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" valign="middle">
+       <h1>Im Kyzz, Full Stack Developer</h1>
+       <p>Thinking in logic. Building in code.</p>
+      </td>
+      <td align="center" valign="middle">
+        <img src="https://github.com/user-attachments/assets/fbc5909d-1e05-4845-98e7-26754ed6a040" alt="STATIC VIEW (1)" width="400">
+      </td>
+    </tr>
+  </table>
+</div>
 
+
+   
 
 <!--
 **Ya-m-i/Ya-m-i** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
