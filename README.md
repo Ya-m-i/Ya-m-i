@@ -11,28 +11,28 @@
             <td align="center" colspan="4" style="border: none;"><strong>MERN STACK</strong></td>
           </tr>
           <tr>
-            <td align="center"><img src="https://github.com/user-attachments/assets/3b7e549f-19c6-499e-9e9a-c56a8aa33d4f" alt="MongoLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/9d6f54ea-afd8-4ac3-956c-ecadd895e4f3" alt="ExpressLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/1d3592a4-ab03-4d7c-a4d9-b6516e405c5d" alt="ReactLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/d3970845-8515-4849-a111-d332f7d45f0b" alt="NodeLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/97efdd2c-863c-4edd-8293-f99aa6bd78ac" alt="MongoDBLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/f3d1b994-a23e-482f-bf35-5d485ec9abd4" alt="ExpressLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/7d2725bd-0264-455a-a610-18a1bd3efd79" alt="ReactLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/ad88dae5-7576-4413-a248-6b1a688428b6" alt="NodeLogo" width="80" style="border-radius: 50%;"></td>
           </tr>
           <tr>
             <td align="center" colspan="4" style="border: none;"><strong>ILAVUE STACK</strong></td>
           </tr>
           <tr>
-            <td align="center"><img src="https://github.com/user-attachments/assets/16b8c281-95ec-40d9-a172-4f7198c11a04" alt="InertiaLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/a3bde334-85ef-46df-8a30-429d91d5f3bb" alt="LaravelLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/7f1d0cb2-1917-4e40-a87b-2be35ad3ac1f" alt="VueLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/373ebbd6-fab2-4509-a44f-724ee3a7fe1f" alt="TailwinLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/0bd8f3a9-fcc3-4c8d-9e0f-810b485b5087" alt="InertiaLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/f042bcde-64e4-4b1d-8a82-f50287d0a8ad" alt="LaravelLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/667658bf-8ee7-4b3c-bae2-c17cd18a376f" alt="VueLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/c097874e-0c5e-4d4f-bd55-97a893f0f243" alt="TailwindLogo" width="80" style="border-radius: 50%;"></td>
           </tr>
           <tr>
             <td align="center" colspan="4" style="border: none;"><strong>NEXUS STACK</strong></td>
           </tr>
           <tr>
-            <td align="center"><img src="https://github.com/user-attachments/assets/43e4bdd9-f282-48ff-8ffd-13b444131a68" alt="NextLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/14fc2f61-5aa9-49c7-bb60-0eebd99fb978" alt="SupabaseLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/fadf70ac-46b5-4fba-8542-32b31c899999" alt="PrismaLogo" width="80" style="border-radius: 50%;"></td>
-            <td align="center"><img src="https://github.com/user-attachments/assets/c4a54be4-a12f-44fe-a0e8-34a99321e0e7" alt="PostgreSQLLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/61fb3d7d-16c2-467f-8d6c-f7b3f8b34fd7" alt="NextLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/0af4f7ea-4af6-4a88-a3af-db5879ed2adf" alt="PrismaLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/298d549e-2bc6-412b-8431-95c59a423e1f" alt="PostgrSQLLogo" width="80" style="border-radius: 50%;"></td>
+            <td align="center"><img src="https://github.com/user-attachments/assets/933ff65b-fb7c-4ff1-b9ce-bebf5156a022" alt="SupabaseLogo" width="80" style="border-radius: 50%;"></td>
           </tr>
         </table>
       </td>
