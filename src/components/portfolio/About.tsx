@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Application } from "@splinetool/runtime";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import { Marquee } from "@/components/ui/marquee";
+import { withBasePath } from "@/lib/base-path";
 
 const ABOUT_SPLINE_SCENE_URL =
   "https://prod.spline.design/yTh9zZA29GxD5YcU/scene.splinecode";
@@ -106,8 +107,8 @@ function About() {
           if (textureLayer && "updateTexture" in textureLayer) {
             const url =
               typeof window !== "undefined"
-                ? `${window.location.origin}/images/AboutMe.png`
-                : "/images/AboutMe.png";
+                ? `${window.location.origin}${withBasePath("/images/AboutMe.png")}`
+                : withBasePath("/images/AboutMe.png");
             textureLayer.updateTexture(url).catch(() => {
               // Ignore if update fails (e.g. wrong object or CORS)
             });
@@ -196,7 +197,7 @@ I focus on learning, experimenting, and delivering solutions that not only work,
                   aria-label={`${name} - open official site`}
                 >
                   <Image
-                    src={`/images/${name}.png`}
+                    src={withBasePath(`/images/${name}.png`)}
                     alt=""
                     width={96}
                     height={96}

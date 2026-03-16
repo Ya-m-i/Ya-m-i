@@ -4,6 +4,7 @@ import React from "react";
 import { MotionCarousel } from "@/components/animate-ui/components/community/motion-carousel";
 import { ThreeDMarquee } from "@/components/ui/3d-marquee";
 import { cn } from "@/lib/utils";
+import { withBasePath } from "@/lib/base-path";
 
 const AGRICHAIN_IMAGE_NAMES = [
   "Admin Login.png",
@@ -17,8 +18,8 @@ const AGRICHAIN_IMAGE_NAMES = [
   "Market.png",
 ];
 
-const AGRICHAIN_IMAGES = AGRICHAIN_IMAGE_NAMES.map(
-  (name) => `/images/agrichainImages/${encodeURIComponent(name)}`
+const AGRICHAIN_IMAGES = AGRICHAIN_IMAGE_NAMES.map((name) =>
+  withBasePath(`/images/agrichainImages/${encodeURIComponent(name)}`)
 );
 
 const AGRICHAIN_LIVE_URL = "https://kapalongagrichain.site/#/";
