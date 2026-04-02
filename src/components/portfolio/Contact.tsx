@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Image from "next/image";
+import { withBasePath } from "@/lib/base-path";
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -40,38 +41,38 @@ const SOCIAL_LINKS = [
     label: "GitHub",
     href: "https://github.com/Ya-m-i",
     icon: GithubIcon,
-    image: "/images/scanImages/Github.png",
+    image: withBasePath("/images/scanImages/Github.png"),
   },
   {
     label: "Instagram",
     href: "https://www.instagram.com/kyzz.1z/",
     icon: InstagramIcon,
-    image: "/images/scanImages/Insta.png",
+    image: withBasePath("/images/scanImages/Insta.png"),
   },
   {
     label: "Discord",
     href: "https://discord.com/channels/@me",
     icon: "discord",
-    image: "/images/scanImages/Discord.png",
+    image: withBasePath("/images/scanImages/Discord.png"),
   },
   {
     label: "LinkedIn",
     href: "#",
     icon: LinkedinIcon,
-    image: "/images/scanImages/Github.png", // Fallback
+    image: withBasePath("/images/scanImages/Github.png"), // Fallback
   },
   {
     label: "Upwork",
     href: "https://www.upwork.com/freelancers/~0161970396e75c1d53",
     icon: "upwork",
-    image: "/images/scanImages/Upwork.png",
+    image: withBasePath("/images/scanImages/Upwork.png"),
   },
 ] as const;
 
 function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [activeScanImage, setActiveScanImage] = useState("/images/scanImages/Github.png");
+  const [activeScanImage, setActiveScanImage] = useState(SOCIAL_LINKS[0].image);
 
   const activeLink = SOCIAL_LINKS.find((link) => link.image === activeScanImage) || SOCIAL_LINKS[0];
 
