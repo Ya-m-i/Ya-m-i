@@ -1,21 +1,22 @@
 import React from "react";
 import dynamic from "next/dynamic";
+import { LazySection } from "@/components/ui/lazy-section";
 import { Navbar } from "@/components/portfolio/Navbar";
 import { Hero } from "@/components/portfolio/Hero";
 
 const About = dynamic(
   () => import("@/components/portfolio/About").then((m) => ({ default: m.default })),
-  { ssr: true, loading: () => <SectionSkeleton id="about" /> }
+  { loading: () => <SectionSkeleton id="about" /> }
 );
 
 const Projects = dynamic(
   () => import("../components/portfolio/Projects").then((m) => ({ default: m.default })),
-  { ssr: true, loading: () => <SectionSkeleton id="projects" /> }
+  { loading: () => <SectionSkeleton id="projects" /> }
 );
 
 const Contact = dynamic(
   () => import("@/components/portfolio/Contact").then((m) => ({ default: m.default })),
-  { ssr: true, loading: () => <SectionSkeleton id="contact" /> }
+  { loading: () => <SectionSkeleton id="contact" /> }
 );
 
 function SectionSkeleton({ id }: { id: string }) {
@@ -35,9 +36,15 @@ export default function Page() {
     <div className="min-h-screen bg-black">
       <Navbar />
       <Hero />
-      <About />
-      <Projects />
-      <Contact />
+      <LazySection>
+        <About />
+      </LazySection>
+      <LazySection>
+        <Projects />
+      </LazySection>
+      <LazySection>
+        <Contact />
+      </LazySection>
     </div>
   );
 }
