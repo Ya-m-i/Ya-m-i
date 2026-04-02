@@ -1,19 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { GithubIcon, InstagramIcon, LinkedinIcon } from "lucide-react";
+import React, { useState } from "react";
+import { GithubIcon, InstagramIcon, LinkedinIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -46,87 +39,75 @@ const SOCIAL_LINKS = [
     label: "GitHub",
     href: "https://github.com/Ya-m-i",
     icon: GithubIcon,
+    image: "/images/scanImages/Github.png",
   },
   {
     label: "Instagram",
-    href: "#",
+    href: "https://www.instagram.com/kyzz.1z/",
     icon: InstagramIcon,
+    image: "/images/scanImages/Insta.png",
   },
   {
     label: "Discord",
     href: "https://discord.com/channels/@me",
     icon: "discord",
+    image: "/images/scanImages/Discord.png",
   },
   {
     label: "LinkedIn",
     href: "#",
     icon: LinkedinIcon,
+    image: "/images/scanImages/Github.png", // Fallback
   },
   {
     label: "Upwork",
-    href: "#",
+    href: "https://www.upwork.com/freelancers/~0161970396e75c1d53",
     icon: "upwork",
+    image: "/images/scanImages/Upwork.png",
   },
 ] as const;
 
-const CONTACT_SPLINE_SCENE_URL =
-  "https://prod.spline.design/6S0XOr1UXVGDcT-n/scene.splinecode";
-
-function hideSplineWatermark(viewerEl: HTMLElement) {
-  const root = viewerEl.shadowRoot;
-  if (!root) return;
-  const link = root.querySelector('a[href*="spline"]');
-  if (link) (link as HTMLElement).style.setProperty("display", "none");
-  root.querySelectorAll("a").forEach((a) => {
-    if (a.textContent?.toLowerCase().includes("spline")) {
-      (a as HTMLElement).style.setProperty("display", "none");
-    }
-  });
-}
-
 function Contact() {
-  const [viewerReady, setViewerReady] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const viewerContainerRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [activeScanImage, setActiveScanImage] = useState("/images/scanImages/Github.png");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (customElements.get("spline-viewer")) {
-      queueMicrotask(() => setViewerReady(true));
-      return;
+  const activeLink = SOCIAL_LINKS.find((link) => link.image === activeScanImage) || SOCIAL_LINKS[0];
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+      _subject: "New Message from Portfolio!",
+      _captcha: "false"
+    };
+
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/kycirshanepacon@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setIsSuccess(true);
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      alert("Error sending message. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
     }
-    customElements.whenDefined("spline-viewer").then(() => setViewerReady(true));
-  }, []);
-
-  useEffect(() => {
-    const container = viewerContainerRef.current;
-    if (!container) return;
-    const preventZoom = (e: WheelEvent) => e.preventDefault();
-    container.addEventListener("wheel", preventZoom, { passive: false });
-    return () => container.removeEventListener("wheel", preventZoom);
-  }, []);
-
-  useEffect(() => {
-    if (!viewerReady || !viewerContainerRef.current) return;
-    const container = viewerContainerRef.current;
-    const hide = () => {
-      const v = container.querySelector("spline-viewer");
-      if (v) hideSplineWatermark(v as HTMLElement);
-    };
-    const id = requestAnimationFrame(() => {
-      const viewer = container.querySelector("spline-viewer");
-      if (!viewer) return;
-      viewer.addEventListener("load-complete", hide);
-      hide();
-    });
-    const retryId = setTimeout(hide, 1200);
-    return () => {
-      cancelAnimationFrame(id);
-      clearTimeout(retryId);
-      const viewer = container.querySelector("spline-viewer");
-      viewer?.removeEventListener("load-complete", hide);
-    };
-  }, [viewerReady]);
+  };
 
   return (
     <section
@@ -153,139 +134,159 @@ function Contact() {
         <h2 className="mb-12 text-center text-3xl font-semibold text-white sm:text-4xl md:mb-16">
           Contact
         </h2>
-        <div
-          ref={viewerContainerRef}
-          className="flex h-[480px] w-full max-w-2xl items-center justify-center overflow-hidden sm:h-[520px] sm:max-w-3xl md:h-[560px] md:max-w-4xl lg:h-[600px] lg:max-w-5xl"
-          style={{ touchAction: "pan-x pan-y" }}
-        >
-          {viewerReady &&
-            React.createElement("spline-viewer", {
-              url: CONTACT_SPLINE_SCENE_URL,
-              style: {
-                width: "100%",
-                height: "100%",
-                minHeight: "400px",
-              },
-              ...(typeof document !== "undefined" && {
-                background: "transparent",
-              }),
-            })}
-        </div>
 
-        {/* Contact me button - same design as Hero "Get in touch" */}
-        <div className="mt-10">
-          <ShimmerButton
-            className="shadow-2xl"
-            onClick={() => setIsFormOpen(true)}
-          >
-            <span className="relative z-10 text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
-              Contact me
-            </span>
-          </ShimmerButton>
-        </div>
+        <div className="flex w-full max-w-5xl flex-col gap-16 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left Split: Scan Image & Socials */}
+          <div className="flex w-full flex-col items-center lg:w-1/2">
+            <h3 className="mb-8 text-xl font-medium text-white/90">Connect Across Platforms</h3>
+            <div className="mb-4 flex aspect-square w-[380px] max-w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl pointer-events-none transition-all duration-300">
+              <img 
+                key={activeScanImage}
+                src={activeScanImage} 
+                alt={`Scan ${activeLink.label}`} 
+                className="h-full w-full object-contain rounded-xl animate-in fade-in zoom-in-95 duration-300"
+              />
+            </div>
+            
+            <p 
+              key={`${activeLink.label}-label`}
+              className="mb-8 text-sm font-medium tracking-wide text-white/60 animate-in fade-in slide-in-from-bottom-2 duration-300"
+            >
+              Scan <span className="text-white/90 font-semibold">{activeLink.label}</span> QR
+            </p>
+            
+            {/* Social links */}
+            <TooltipProvider delayDuration={100}>
+              <div className="flex flex-wrap justify-center gap-6">
+                {SOCIAL_LINKS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeScanImage === item.image;
+                  return (
+                    <Tooltip key={item.label}>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={item.href}
+                          target={item.href !== "#" ? "_blank" : undefined}
+                          rel={item.href !== "#" ? "noopener noreferrer" : undefined}
+                          onClick={(e) => {
+                            if (!isActive) {
+                              e.preventDefault();
+                              setActiveScanImage(item.image);
+                            }
+                          }}
+                          aria-label={item.label}
+                          className={cn(
+                            "flex items-center justify-center rounded-full p-3.5 transition-all hover:scale-110 active:scale-95",
+                            isActive 
+                              ? "bg-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)] ring-1 ring-white/30" 
+                              : "bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
+                          )}
+                        >
+                          {typeof Icon === "string" ? (
+                            Icon === "discord" ? (
+                              <DiscordIcon className="size-6" />
+                            ) : (
+                              <UpworkIcon className="size-6" />
+                            )
+                          ) : (
+                            <Icon className="size-6" />
+                          )}
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        side="bottom" 
+                        sideOffset={8}
+                        className="rounded border border-white/10 bg-neutral-900/90 backdrop-blur-sm text-white px-3 py-1.5 text-sm font-medium shadow-2xl"
+                      >
+                        <p>{item.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
+          </div>
 
-        {/* Social links: one row, flex wrap */}
-        <div className="mt-10 flex flex-wrap justify-center gap-6">
-          {SOCIAL_LINKS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <a
-                key={item.label}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={item.label}
-                className="flex items-center justify-center rounded-full p-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {typeof Icon === "string" ? (
-                  Icon === "discord" ? (
-                    <DiscordIcon className="size-6" />
-                  ) : (
-                    <UpworkIcon className="size-6" />
-                  )
-                ) : (
-                  <Icon className="size-6" />
-                )}
-              </a>
-            );
-          })}
+          {/* Right Split: Contact Form */}
+          <div className="flex w-full flex-col lg:w-1/2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-10 min-h-[500px] flex flex-col justify-center">
+              {isSuccess ? (
+                <div className="flex flex-col items-center justify-center space-y-4 py-12 text-center fade-in animate-in duration-500">
+                  <CheckCircle2 className="size-16 text-green-500 mb-4" />
+                  <h4 className="text-2xl font-semibold text-white">Message Sent!</h4>
+                  <p className="text-white/70">
+                    Thank you for reaching out. I'll get back to you as soon as possible via email.
+                  </p>
+                  <button
+                    onClick={() => setIsSuccess(false)}
+                    className="mt-8 rounded-md border border-white/20 px-6 py-2.5 text-sm font-medium text-white/90 transition-all hover:bg-white/10"
+                  >
+                    Send Another Message
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="mb-8 text-2xl font-semibold text-white">Send a Message</h3>
+                  <form className="grid gap-6" onSubmit={handleSubmit}>
+                    <div className="grid gap-2">
+                      <Label htmlFor="contact-name" className="text-white/90">
+                        Name
+                      </Label>
+                      <Input
+                        id="contact-name"
+                        name="name"
+                        type="text"
+                        placeholder="Your name"
+                        required
+                        disabled={isSubmitting}
+                        className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30 h-11"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="contact-email" className="text-white/90">
+                        Email
+                      </Label>
+                      <Input
+                        id="contact-email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                        disabled={isSubmitting}
+                        className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30 h-11"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="contact-message" className="text-white/90">
+                        Message
+                      </Label>
+                      <Textarea
+                        id="contact-message"
+                        name="message"
+                        placeholder="Your message..."
+                        rows={5}
+                        required
+                        disabled={isSubmitting}
+                        className="min-h-[120px] border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30 resize-none"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="mt-4 w-full flex items-center justify-center rounded-md bg-white px-4 py-3 text-sm font-semibold text-black transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? "Sending..." : "Send Message"}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Contact form overlay */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-md border-white/10 bg-neutral-900 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl text-white">
-              Contact me
-            </DialogTitle>
-          </DialogHeader>
-          <form
-            className="grid gap-4 pt-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setIsFormOpen(false);
-            }}
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="contact-name" className="text-white/90">
-                Name
-              </Label>
-              <Input
-                id="contact-name"
-                name="name"
-                type="text"
-                placeholder="Your name"
-                required
-                className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="contact-email" className="text-white/90">
-                Email
-              </Label>
-              <Input
-                id="contact-email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                required
-                className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="contact-message" className="text-white/90">
-                Message
-              </Label>
-              <Textarea
-                id="contact-message"
-                name="message"
-                placeholder="Your message..."
-                rows={4}
-                required
-                className="min-h-24 border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/30"
-              />
-            </div>
-            <DialogFooter className="mt-2 border-white/10 bg-transparent">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-90"
-              >
-                Send
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
-export default Contact;
+
 export { Contact };
+export default Contact;
