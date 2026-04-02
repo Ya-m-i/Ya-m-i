@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Image from "next/image";
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -140,12 +141,16 @@ function Contact() {
           <div className="flex w-full flex-col items-center lg:w-1/2">
             <h3 className="mb-8 text-xl font-medium text-white/90">Connect Across Platforms</h3>
             <div className="mb-4 flex aspect-square w-[380px] max-w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl pointer-events-none transition-all duration-300">
-              <img 
-                key={activeScanImage}
-                src={activeScanImage} 
-                alt={`Scan ${activeLink.label}`} 
-                className="h-full w-full object-contain rounded-xl animate-in fade-in zoom-in-95 duration-300"
-              />
+              <div className="relative h-full w-full">
+                <Image 
+                  key={activeScanImage}
+                  src={activeScanImage} 
+                  alt={`Scan ${activeLink.label}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 380px"
+                  className="object-contain rounded-xl animate-in fade-in zoom-in-95 duration-300"
+                />
+              </div>
             </div>
             
             <p 
