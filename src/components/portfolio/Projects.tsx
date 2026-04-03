@@ -24,6 +24,47 @@ const AGRICHAIN_IMAGES = AGRICHAIN_IMAGE_NAMES.map((name) =>
 
 const AGRICHAIN_LIVE_URL = "https://kapalongagrichain.site/#/";
 
+const YAMIPRO_IMAGE_NAMES = [
+  "anna.png",
+  "appr.png",
+  "dash.png",
+  "po.png",
+  "yamiPro.png",
+  "pr.png",
+  "rcv.png",
+  "record.png",
+  "report.png",
+  "supply.png"
+];
+
+const YAMIPRO_IMAGES = YAMIPRO_IMAGE_NAMES.map((name) =>
+  withBasePath(`/images/yamiproImages/${encodeURIComponent(name)}`)
+);
+
+const YAMIPRO_LIVE_URL = "#";
+
+const YAMIPOS_IMAGE_NAMES = [
+  "cus.png",
+  "dash.png",
+  "dis.png",
+  "favProd.png",
+  "income.png",
+  "invent.png",
+  "yamiPOS.png", // center marquee image
+  "prod.png",
+  "report.png",
+  "sales.png",
+  "supp.png",
+  "totalSales.png",
+  "trans.png"
+];
+
+const YAMIPOS_IMAGES = YAMIPOS_IMAGE_NAMES.map((name) =>
+  withBasePath(`/images/yamiposImages/${encodeURIComponent(name)}`)
+);
+
+const YAMIPOS_LIVE_URL = "#";
+
 function BlankProjectCard() {
   return (
     <div className="mx-auto flex h-[350px] w-[400px] items-center justify-center rounded-3xl border border-dashed border-white/20 bg-neutral-950/40 ring-1 ring-neutral-700/20 dark:bg-neutral-900/30">
@@ -56,11 +97,59 @@ function AgriChainProjectCard() {
   );
 }
 
+function YamiPROProjectCard() {
+  return (
+    <a
+      href={YAMIPRO_LIVE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mx-auto block h-[350px] w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
+      aria-label="YamiPRO - open live site"
+    >
+      <div className="mb-3 text-center">
+        <h3 className="text-xl font-semibold text-white sm:text-2xl">
+          YamiPRO
+        </h3>
+        <p className="mt-1 text-sm text-white/70">
+          A web-based procurement system that streamlines workflows and improves efficiency through automation.
+        </p>
+      </div>
+      <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
+        <ThreeDMarquee images={YAMIPRO_IMAGES} className="h-full w-full" />
+      </div>
+    </a>
+  );
+}
+
+function YamiPOSProjectCard() {
+  return (
+    <a
+      href={YAMIPOS_LIVE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mx-auto block h-[350px] w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
+      aria-label="YamiPOS - open live site"
+    >
+      <div className="mb-3 text-center">
+        <h3 className="text-xl font-semibold text-white sm:text-2xl">
+          YamiPOS
+        </h3>
+        <p className="mt-1 text-sm text-white/70">
+          A point-of-sale & Inventory system designed to streamline transactions and improve sales management efficiency.
+        </p>
+      </div>
+      <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
+        <ThreeDMarquee images={YAMIPOS_IMAGES} className="h-full w-full" />
+      </div>
+    </a>
+  );
+}
+
 function Projects() {
   const slides = [
-    <BlankProjectCard key="blank-1" />,
+    <YamiPROProjectCard key="yamipro" />,
     <AgriChainProjectCard key="agrichain" />,
-    <BlankProjectCard key="blank-2" />,
+    <YamiPOSProjectCard key="yamipos" />,
   ];
 
   return (
