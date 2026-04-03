@@ -87,7 +87,7 @@ function AgriChainProjectCard() {
           AgriChain
         </h3>
         <p className="mt-1 text-sm text-white/70">
-          Full-stack agriculture platform — admin, farmer dashboards, market &amp; inventory
+          A blockchain-based platform that ensures transparency, traceability, and streamlined insurance processing in the agricultural supply chain.
         </p>
       </div>
       <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
