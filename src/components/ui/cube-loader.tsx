@@ -23,32 +23,32 @@ export default function CubeLoader() {
 
           {/* Front */}
           <div className='side-wrapper front'>
-            <div className='face bg-cyan-500/10 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' />
+            <div className='face bg-white/10 border-2 border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.4)]' />
           </div>
           
           {/* Back */}
           <div className='side-wrapper back'>
-            <div className='face bg-cyan-500/10 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' />
+            <div className='face bg-white/10 border-2 border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.4)]' />
           </div>
 
           {/* Right */}
           <div className='side-wrapper right'>
-            <div className='face bg-purple-500/10 border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]' />
+            <div className='face bg-slate-400/10 border-2 border-slate-400/50 shadow-[0_0_15px_rgba(148,163,184,0.4)]' />
           </div>
 
           {/* Left */}
           <div className='side-wrapper left'>
-            <div className='face bg-purple-500/10 border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]' />
+            <div className='face bg-slate-400/10 border-2 border-slate-400/50 shadow-[0_0_15px_rgba(148,163,184,0.4)]' />
           </div>
 
           {/* Top */}
           <div className='side-wrapper top'>
-            <div className='face bg-indigo-500/10 border-2 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]' />
+            <div className='face bg-slate-500/10 border-2 border-slate-500/50 shadow-[0_0_15px_rgba(100,116,139,0.4)]' />
           </div>
 
           {/* Bottom */}
           <div className='side-wrapper bottom'>
-            <div className='face bg-indigo-500/10 border-2 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]' />
+            <div className='face bg-slate-500/10 border-2 border-slate-500/50 shadow-[0_0_15px_rgba(100,116,139,0.4)]' />
           </div>
         </div>
 
@@ -58,7 +58,7 @@ export default function CubeLoader() {
 
       {/* Loading Text */}
       <div className='flex flex-col items-center gap-1 mt-2'>
-  <h3 className='text-sm font-semibold tracking-[0.3em] text-cyan-300 uppercase'>
+  <h3 className='text-sm font-semibold tracking-[0.3em] text-white uppercase'>
     Loading
   </h3>
   <p className='text-xs text-slate-400'>

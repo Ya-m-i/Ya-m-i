@@ -2,9 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "motion/react";
 import { Application } from "@splinetool/runtime";
-import { TypingAnimation } from "@/components/ui/typing-animation";
 import { Marquee } from "@/components/ui/marquee";
 import { Timeline } from "@/components/ui/timeline";
 import {
@@ -20,20 +18,12 @@ import Autoplay from "embla-carousel-autoplay";
 const ABOUT_SPLINE_SCENE_URL =
   "https://prod.spline.design/yTh9zZA29GxD5YcU/scene.splinecode";
 
-/** Badge text - set via Spline scene variables (name, education, location).
- * For the 3D badge text to change (not overlay), the scene must have variables in Spline:
- * 1. Open the scene in Spline → Right panel → Variables → Add String variables (e.g. "name", "education", "location").
- * 2. Select each text object → bind its content to the matching variable.
- * 3. Re-export the scene. Then setVariable() will update the text. */
 const BADGE_VARIABLES = {
   name: "Kyzz Shane Pacon",
   education: "BS. Information Technology",
   location: "PH, Panabo City",
 };
 
-/** Your badge photo: put image at public/images/AboutMe.png - it replaces the texture inside the 3D badge. */
-
-/** Skill logo name (matches filename: public/images/{name}.png) → official docs/homepage URL */
 const SKILL_LINKS: Readonly<Record<string, string>> = {
   Mongo: "https://www.mongodb.com/",
   Express: "https://expressjs.com/",
@@ -50,27 +40,149 @@ const SKILL_LINKS: Readonly<Record<string, string>> = {
 };
 
 const SKILL_LOGOS = Object.keys(SKILL_LINKS) as (keyof typeof SKILL_LINKS)[];
+
+// Work experience data
+const EXPERIENCE_ENTRIES = [
+  {
+    org: "Kapalong Department of Agriculture",
+    role: "AGRICHAIN PROJECT",
+    period: "2024 – 2025",
+    description: "Developed a blockchain-powered agricultural tracking system ensuring data transparency, immutability, and traceability across the supply chain.",
+  },
+  {
+    org: "Bridge Digital Transformation Inc.",
+    role: "ON THE JOB TRAINING",
+    period: "2026 – PRESENT",
+    description: "Performed system debugging, bug fixing, and optimization tasks. Conducted QA testing, data validation, and data migration checks. Worked on Laravel, Vue, and Inertia stack setup and development support. Used GitHub (clone, pull, branch, commit, push) for collaboration. Collaborated using Figma for UI/UX and system visualization. Assisted in AI and automation integration proposals for HRIS.",
+  },
+];
+
+function hideSplineWatermark(viewerEl: HTMLElement) {
+  const root = viewerEl.shadowRoot;
+  if (!root) return;
+  const link = root.querySelector('a[href*="spline"]');
+  if (link) (link as HTMLElement).style.setProperty("display", "none");
+  root.querySelectorAll("a").forEach((a) => {
+    if (a.textContent?.toLowerCase().includes("spline")) {
+      (a as HTMLElement).style.setProperty("display", "none");
+    }
+  });
+}
+
 function About() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
-  const [splineInView, setSplineInView] = useState(false);
+  const [splineLoaded, setSplineLoaded] = useState(false);
 
+  // Scroll-driven animation values
+  const [textOpacity, setTextOpacity] = useState(1);
+  const [cardX, setCardX] = useState(0);
+  const [cardScale, setCardScale] = useState(1);
+  const [expOpacity, setExpOpacity] = useState(0);
+
+  // Scroll math (4 phases, each = 1 viewport height = 400vh total wrapper)
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const handleScroll = () => {
+      const outer = outerRef.current;
+      if (!outer) return;
+      const rect = outer.getBoundingClientRect();
+      const totalScrollable = outer.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, -rect.top);
+      const rawProgress = Math.min(Math.max(scrolled / totalScrollable, 0), 1);
+
+      // --- Phase boundaries (each = 25% of total scroll) ---
+      // phase1: 0→0.25  → text fades out
+      // phase2: 0.25→0.5 → card moves center + zooms
+      // phase3: 0.5→0.75 → card slides right, exp fades in left
+      // phase4: 0.75→1  → reserved / natural scroll into rest of section
+
+      const p1 = rawProgress / 0.25;                              // 0→1 during phase1
+      const p2 = (rawProgress - 0.25) / 0.25;                    // 0→1 during phase2
+      const p3 = (rawProgress - 0.5) / 0.25;                     // 0→1 during phase3
+
+      // Text fade: 1 → 0 over phase1
+      const tOpacity = Math.max(0, 1 - Math.min(1, p1));
+
+      // Card: during phase1 stays put; phase2 moves center + zooms; phase3 moves right
+      let cX = 0;       // 0 = left-col position (default)
+      let cScale = 1;
+
+      if (rawProgress >= 0.25 && rawProgress < 0.5) {
+        // Move from left-col → center of viewport (translateX 0 → +25vw) and zoom 1→1.25
+        const t = Math.min(1, Math.max(0, p2));
+        cX = t * 25;       // vw — center is halfway between left (0) and right (50)
+        cScale = 1 + t * 0.25;
+      } else if (rawProgress >= 0.5 && rawProgress < 0.75) {
+        // Move center → right col (where about text was: justify-end pr-24, ~75% of viewport)
+        // Card left = calc(25% - 220px), so to center card at 75%: translate +50vw total
+        const t = Math.min(1, Math.max(0, p3));
+        cX = 25 + t * 25;  // 25vw → 50vw
+        cScale = 1.25 - t * 0.3; // zoom back down to 0.95
+      } else if (rawProgress >= 0.75) {
+        // Settled in right col — matching original right text panel position
+        cX = 50;
+        cScale = 0.95;
+      }
+
+      // Exp panel: fades in during phase3
+      const eOpacity = rawProgress >= 0.5
+        ? Math.min(1, Math.max(0, p3))
+        : 0;
+
+      setTextOpacity(tOpacity);
+      setCardX(cX);
+      setCardScale(cScale);
+      setExpOpacity(eOpacity);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Load Spline when card enters view
+  useEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setSplineInView(true);
+        if (entry?.isIntersecting) {
+          setSplineLoaded(true);
+          obs.disconnect();
+        }
       },
-      { rootMargin: "100px", threshold: 0.1 }
+      { rootMargin: "200px", threshold: 0.05 }
     );
-    obs.observe(section);
+    obs.observe(outer);
     return () => obs.disconnect();
   }, []);
 
   useEffect(() => {
-    if (!splineInView) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const blockInteraction = (e: Event) => {
+      // Allow scroll but stop Spline from seeing it
+      if (e.type !== "wheel") {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    };
+
+    canvas.addEventListener("wheel", blockInteraction, { capture: true, passive: true });
+    canvas.addEventListener("mousedown", blockInteraction, { capture: true });
+    canvas.addEventListener("touchstart", blockInteraction, { capture: true });
+
+    return () => {
+      canvas.removeEventListener("wheel", blockInteraction, { capture: true });
+      canvas.removeEventListener("mousedown", blockInteraction, { capture: true } as EventListenerOptions);
+      canvas.removeEventListener("touchstart", blockInteraction, { capture: true } as EventListenerOptions);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!splineLoaded) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -81,7 +193,6 @@ function About() {
       .load(ABOUT_SPLINE_SCENE_URL, BADGE_VARIABLES)
       .then(() => {
         app.setBackgroundColor("transparent");
-        // Set badge text inside 3D scene via Spline variables (scene must have these variables bound to text in Spline editor)
         app.setVariables({
           name: BADGE_VARIABLES.name,
           education: BADGE_VARIABLES.education,
@@ -103,10 +214,11 @@ function About() {
         for (const key of Object.keys(sceneVars)) {
           const k = key.toLowerCase();
           if (k.includes("name")) app.setVariable(key, BADGE_VARIABLES.name);
-          else if (k.includes("education") || k.includes("degree") || k.includes("school")) app.setVariable(key, BADGE_VARIABLES.education);
-          else if (k.includes("location") || k.includes("address") || k.includes("city") || k.includes("place")) app.setVariable(key, BADGE_VARIABLES.location);
+          else if (k.includes("education") || k.includes("degree") || k.includes("school"))
+            app.setVariable(key, BADGE_VARIABLES.education);
+          else if (k.includes("location") || k.includes("address") || k.includes("city") || k.includes("place"))
+            app.setVariable(key, BADGE_VARIABLES.location);
         }
-        // Find an object that has a texture layer (the badge photo) and replace it with our image
         const objects = app.getAllObjects();
         for (const obj of objects) {
           const mat = obj.material;
@@ -119,9 +231,7 @@ function About() {
               typeof window !== "undefined"
                 ? `${window.location.origin}${withBasePath("/images/AboutMe.png")}`
                 : withBasePath("/images/AboutMe.png");
-            textureLayer.updateTexture(url).catch(() => {
-              // Ignore if update fails (e.g. wrong object or CORS)
-            });
+            textureLayer.updateTexture(url).catch(() => {});
             break;
           }
         }
@@ -131,108 +241,176 @@ function About() {
     return () => {
       appRef.current = null;
     };
-  }, [splineInView]);
+  }, [splineLoaded]);
 
   return (
-    <section
-      ref={sectionRef}
-      id="about"
-      className="relative flex min-h-[60vh] w-full flex-col items-center justify-start overflow-hidden bg-black pt-16 pb-16 md:min-h-[70vh] md:pt-24 md:pb-24"
-    >
-      {/* Main Container restricting exactly to the top profile section so background text doesn't slide down into timeline */}
-      <div className="relative flex w-full flex-col items-center">
-        {/* Background text: ABOUT ME */}
-        <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          aria-hidden
+    <>
+      {/*
+       * 400vh sticky parallax zone:
+       *   Phase 1 (0→25%):  About text fades out
+       *   Phase 2 (25→50%): 3D card moves center + zooms
+       *   Phase 3 (50→75%): card slides right, experience fades in left
+       *   Phase 4 (75→100%): settled
+       * Timeline/skills are OUTSIDE this wrapper — only reachable after all phases complete.
+       */}
+      <div ref={outerRef} style={{ height: "400vh" }} className="relative">
+        <section
+          id="about"
+          className="sticky top-0 overflow-hidden bg-black"
+          style={{ height: "100vh" }}
         >
-          <span
-            className="select-none text-[clamp(4rem,18vw,14rem)] font-bold tracking-tighter text-white/3"
-            style={{ lineHeight: 1 }}
+          {/* Ambient background text */}
+          <div
+            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            aria-hidden
           >
-            ABOUT ME
-          </span>
-        </div>
+            <span
+              className="select-none text-[clamp(4rem,18vw,14rem)] font-bold tracking-tighter text-white/3"
+              style={{ lineHeight: 1 }}
+            >
+              ABOUT ME
+            </span>
+          </div>
 
-        <div className="relative z-10 flex w-full max-w-6xl flex-col items-center gap-12 px-4 md:flex-row md:items-center md:gap-16 lg:gap-20">
-          {/* Left: Spline Sleek ID Badge (runtime = transparent bg + replace texture + set variables for name/education/location) */}
-          <div 
-            className="flex min-h-[380px] w-full flex-1 items-center justify-center md:min-h-[460px] lg:min-h-[520px]"
-            style={{ perspective: 1000 }}
+          {/* ── PHASE 0 & 1: About text (title + paragraph) fades out ── */}
+          <div
+            className="pointer-events-none absolute inset-0 flex items-center justify-end pr-8 md:pr-16 lg:pr-24 z-10"
+            style={{
+              opacity: textOpacity,
+              transition: "opacity 0.05s linear",
+            }}
+          >
+            <div className="flex max-w-lg flex-col justify-start text-center md:text-left">
+              <h2 className="font-[family-name:var(--font-orbitron)] text-2xl font-semibold text-white sm:text-3xl md:text-4xl">
+                About
+              </h2>
+              <div className="mt-4 flex flex-col gap-4 min-h-72 sm:min-h-80 text-justify text-base leading-relaxed text-white/90 sm:text-lg">
+                <p>
+                  I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.
+                </p>
+                <p>
+                  I focus on learning, experimenting, and delivering solutions that not only work, but help people, simplify their work, and empower businesses. My journey is fueled by curiosity, growth, and the drive to create systems that truly change lives.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3D CARD: animates position & scale across phases ── */}
+          <div
+            className="absolute z-20"
+            style={{
+              top: "50%",
+              left: "calc(25% - 220px)",
+              width: "440px",
+              height: "520px",
+              transform: `translate(${cardX}vw, -50%) scale(${cardScale})`,
+              transition: "transform 0.08s linear",
+              willChange: "transform",
+            }}
           >
             <canvas
               ref={canvasRef}
-              className="h-full w-full min-h-[360px] rounded-lg md:min-h-[440px] lg:min-h-[500px]"
               style={{
                 width: "100%",
                 height: "100%",
-                minHeight: "360px",
                 background: "transparent",
+                display: "block",
               }}
             />
           </div>
 
-          {/* Right: About text — min-height so position stays fixed when typing runs */}
-          <div className="flex flex-1 flex-col justify-start text-center md:text-left">
-            <h2 className="font-[family-name:var(--font-orbitron)] text-2xl font-semibold text-white sm:text-3xl md:text-4xl">
-              About
-            </h2>
-            <div className="mt-4 min-h-72 sm:min-h-80">
-              <TypingAnimation
-                as="p"
-                className="text-base leading-relaxed text-white/90 sm:text-lg whitespace-pre-line"
-                words={["I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.\n\nI focus on learning, experimenting, and delivering solutions that not only work, but help people, simplify their work, and empower businesses. My journey is fueled by curiosity, growth, and the drive to create systems that truly change lives."]}
-                showCursor={false}
-                typeSpeed={18}
-                loop={false}
-                startOnView={true}
-              />
+          {/* ── WORK EXPERIENCE: fades in on the LEFT while card moves right ── */}
+          <div
+            className="pointer-events-none absolute inset-0 flex items-center justify-start pl-8 md:pl-16 lg:pl-24 z-10"
+            style={{
+              opacity: expOpacity,
+              transition: "opacity 0.08s linear",
+            }}
+          >
+            <div className="flex max-w-md flex-col gap-6">
+              {/* Section label */}
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-bold tracking-[0.25em] text-white/40 uppercase">
+                  My Work Experiences
+                </p>
+                <h3 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-widest text-white sm:text-2xl">
+                  E X P E R I E N C E
+                </h3>
+                <div className="mt-1 h-px w-16 bg-gradient-to-r from-white/60 to-transparent" />
+              </div>
+
+              {/* Experience entries */}
+              <div className="flex flex-col gap-8">
+                {EXPERIENCE_ENTRIES.map((entry, i) => (
+                  <div key={i} className="flex flex-col gap-1.5">
+                    {/* Org + period */}
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[11px] font-semibold tracking-widest text-white/50 uppercase">
+                        {entry.org}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-[family-name:var(--font-orbitron)] text-sm font-bold text-white">
+                          {entry.role}
+                        </span>
+                        <span className="text-[10px] text-white/40">I {entry.period}</span>
+                      </div>
+                    </div>
+                    {/* Description */}
+                    <p className="text-sm text-justify text-white/70 leading-relaxed mt-1">
+                      {entry.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ── REST OF ABOUT: timeline + skills — only reachable AFTER full sticky scroll ── */}
+      <div className="relative z-10 bg-black">
+        {/* Timeline / Certificates Section */}
+        <div id="certificates" className="relative z-10 w-full max-w-7xl mx-auto">
+          <TimelineDemo />
+        </div>
+
+        {/* My Skills */}
+        <div id="skills" className="relative z-10 mt-8 w-full max-w-6xl px-4 md:mt-16 mx-auto pb-16">
+          <h3 className="font-[family-name:var(--font-orbitron)] text-center text-2xl font-semibold text-white sm:text-3xl">
+            My Skills
+          </h3>
+          <div className="relative mt-8 flex w-full flex-col items-center justify-center overflow-hidden">
+            <Marquee pauseOnHover className="[--duration:20s] [--gap:2rem]" repeat={4}>
+              {SKILL_LOGOS.map((name) => {
+                const url = SKILL_LINKS[name];
+                return (
+                  <a
+                    key={name}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10 md:h-24 md:w-32"
+                    aria-label={`${name} - open official site`}
+                  >
+                    <Image
+                      src={withBasePath(`/images/${name}.png`)}
+                      alt=""
+                      width={96}
+                      height={96}
+                      sizes="(max-width: 768px) 56px, 64px"
+                      className="max-h-14 w-auto object-contain md:max-h-16"
+                      loading="lazy"
+                    />
+                  </a>
+                );
+              })}
+            </Marquee>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-black to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-black to-transparent" />
           </div>
         </div>
       </div>
-
-      {/* Timeline / Certificates Section */}
-      <div id="certificates" className="relative z-10 w-full max-w-7xl">
-        <TimelineDemo />
-      </div>
-
-      {/* My Skills: heading + Marquee (single row, no reverse) */}
-      <div id="skills" className="relative z-10 mt-8 w-full max-w-6xl px-4 md:mt-16">
-        <h3 className="font-[family-name:var(--font-orbitron)] text-center text-2xl font-semibold text-white sm:text-3xl">
-          My Skills
-        </h3>
-        <div className="relative mt-8 flex w-full flex-col items-center justify-center overflow-hidden">
-          <Marquee pauseOnHover className="[--duration:20s] [--gap:2rem]" repeat={4}>
-            {SKILL_LOGOS.map((name) => {
-              const url = SKILL_LINKS[name];
-              return (
-                <a
-                  key={name}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10 md:h-24 md:w-32"
-                  aria-label={`${name} - open official site`}
-                >
-                  <Image
-                    src={withBasePath(`/images/${name}.png`)}
-                    alt=""
-                    width={96}
-                    height={96}
-                    sizes="(max-width: 768px) 56px, 64px"
-                    className="max-h-14 w-auto object-contain md:max-h-16"
-                    loading="lazy"
-                  />
-                </a>
-              );
-            })}
-          </Marquee>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-black to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-black to-transparent" />
-        </div>
-      </div>
-    </section>
+    </>
   );
 }
 
@@ -249,8 +427,8 @@ function TimelineCarousel({ title, description, items, type }: { title: string; 
     <>
       <div className="flex flex-col gap-4">
         <div className="relative w-full md:px-12">
-          <Carousel 
-            opts={{ align: "start", loop: true }} 
+          <Carousel
+            opts={{ align: "start", loop: true }}
             plugins={[
               Autoplay({
                 delay: 3500,
@@ -261,7 +439,7 @@ function TimelineCarousel({ title, description, items, type }: { title: string; 
             <CarouselContent className="-ml-3">
               {items.map((item, idx) => (
                 <CarouselItem key={idx} className="pl-3 sm:basis-2/3 md:basis-[70%] lg:basis-[80%]">
-                  <FeatureBlockCard 
+                  <FeatureBlockCard
                     title={`${title.endsWith('s') ? title.slice(0, -1) : title} ${idx + 1}`}
                     description={item.desc}
                     image={withBasePath(`/images/${type}/${item.img}`)}
@@ -281,15 +459,15 @@ function TimelineCarousel({ title, description, items, type }: { title: string; 
 
       {/* Full View Modal */}
       {selectedItem && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-4 transition-opacity duration-300"
           onClick={() => setSelectedItem(null)}
         >
-          <div 
+          <div
             className="relative flex w-full max-w-4xl flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-neutral-950 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <button 
+            <button
               onClick={() => setSelectedItem(null)}
               className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
               aria-label="Close modal"
@@ -386,21 +564,20 @@ export function TimelineDemo() {
 export default About;
 export { About };
 
-/** 
- * Feature Block Animated Card Components 
- * Based on user provided snippet
+/**
+ * Feature Block Animated Card Components
  */
 
-function FeatureBlockCard({ 
-  title, 
-  description, 
-  image, 
+function FeatureBlockCard({
+  title,
+  description,
+  image,
   onClick,
-  dotColor 
-}: { 
-  title: string; 
-  description: string; 
-  image: string; 
+  dotColor
+}: {
+  title: string;
+  description: string;
+  image: string;
   onClick?: () => void;
   dotColor?: string;
 }) {
@@ -427,4 +604,3 @@ function FeatureBlockCard({
     </div>
   );
 }
-

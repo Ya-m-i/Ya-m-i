@@ -54,6 +54,28 @@ function hideSplineWatermark(viewerEl: HTMLElement) {
 export function Hero() {
   const [viewerReady, setViewerReady] = useState(false);
   const viewerContainerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [phTime, setPhTime] = useState({ time: "", date: "", day: "" });
+
+  // Parallax scroll state
+  const [bgScale, setBgScale] = useState(1.25);
+  const [contentOpacity, setContentOpacity] = useState(1);
+  const [exitOpacity, setExitOpacity] = useState(0);
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const opts: Intl.DateTimeFormatOptions = { timeZone: "Asia/Manila" };
+      setPhTime({
+        time: now.toLocaleTimeString("en-PH", { ...opts, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
+        date: now.toLocaleDateString("en-PH", { ...opts, month: "short", day: "numeric", year: "numeric" }),
+        day:  now.toLocaleDateString("en-PH", { ...opts, weekday: "long" }),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -62,6 +84,36 @@ export function Hero() {
       return;
     }
     customElements.whenDefined("spline-viewer").then(() => setViewerReady(true));
+  }, []);
+
+  // Parallax scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const sectionH = window.innerHeight;
+      // Extra scroll distance reserved for the parallax effect (= 1 full viewport)
+      const parallaxZone = sectionH;
+
+      // progress: 0 at top, 1 when scrolled one viewport past the hero
+      const progress = Math.min(Math.max(scrollY / parallaxZone, 0), 1);
+
+      // Scale: 1.25 → 1.8
+      const scale = 1.25 + progress * (1.8 - 1.25);
+
+      // Content fades out during the first 50% of the parallax scroll
+      const contentFade = Math.max(0, 1 - progress / 0.5);
+
+      // Black overlay fades in from 60% → 100% of the parallax scroll
+      const exitFade = progress < 0.6 ? 0 : (progress - 0.6) / 0.4;
+
+      setBgScale(scale);
+      setContentOpacity(contentFade);
+      setExitOpacity(exitFade);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // initialise on mount
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -110,93 +162,138 @@ export function Hero() {
   }, [viewerReady]);
 
   return (
-    <section id="hero" className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-black">
-      {/* Spline 3D background - intercept dragging/zooming while allowing hover */}
-      <div ref={viewerContainerRef} className="absolute inset-0 z-0 scale-[1.25]">
-        {viewerReady &&
-          React.createElement("spline-viewer", {
-            url: SPLINE_SCENE_URL,
-            className: "h-full w-full",
-            style: { display: "block", width: "100%", height: "100%" },
-          })}
-      </div>
-
-      {/* Overlay gradient so text stays readable - pointer-events-none so Spline gets hover/click */}
-      <div
-        className="pointer-events-none absolute inset-0 z-1 bg-linear-to-b from-black/60 via-transparent to-black/80"
-        aria-hidden
-      />
-
-      {/* Hero content wrapper */}
-      <div className="pointer-events-none relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-32 pb-20 md:pt-40">
-        
-        {/* Top: Left and Right columns */}
-        <div className="flex w-full flex-col items-center justify-center gap-8 md:flex-row md:gap-12 lg:gap-16">
-          {/* Left: headline, tagline, buttons */}
-          <div className="flex flex-1 flex-col items-center text-center md:items-start md:text-left">
-            {/* Fixed-height container so tagline and buttons don't move when headline text changes */}
-            <div className="flex items-center overflow-hidden">
-              <TypingAnimation
-                as="h1"
-                className="font-[family-name:var(--font-orbitron)] whitespace-nowrap text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl"
-                words={["Hi, I'm Ya-m-i", "Fullstack Dev", "UI/UX Designer"]}
-                loop
-                showCursor
-                cursorStyle="line"
-                typeSpeed={65}
-                deleteSpeed={35}
-                pauseDelay={2200}
-                startOnView={true}
-              />
-            </div>
-            <p className="mt-4 text-lg text-white/90 sm:text-xl">
-              Just Believe, Nothing is Impossible
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4 [&_a]:pointer-events-auto [&_button]:pointer-events-auto md:justify-start">
-              <a
-                href="#projects"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="rounded-md bg-white px-5 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
-              >
-                View work
-              </a>
-              <ShimmerButton
-                borderRadius="0.375rem"
-                className="shadow-2xl"
-                onClick={() =>
-                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "center" })
-                }
-              >
-                <span className="font-[family-name:var(--font-orbitron)] relative z-10 text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
-                  Get in touch
-                </span>
-              </ShimmerButton>
-            </div>
-          </div>
-
-          {/* Right: spinning text & orbital timeline */}
-          <div className="flex flex-1 items-center justify-center md:justify-end md:pr-20 lg:pr-40 xl:pr-48">
-            <div className="relative flex items-center justify-center max-w-[90vw]">
-              <SpinningText
-                reverse
-                className="text-3xl font-bold uppercase text-white sm:text-[2.5rem]"
-                duration={16}
-                radius={7}
-              >
-                FULL • STACK • DEVELOPER •
-              </SpinningText>
-              
-              <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-100">
-                <RadialOrbitalTimeline timelineData={heroTimelineData} radius={115} />
-              </div>
-            </div>
-          </div>
+    /*
+     * Outer wrapper is 200vh tall so the browser has scroll room
+     * for the parallax effect. The <section> inside is sticky and
+     * stays pinned for that entire 200vh of scroll distance.
+     */
+    <div ref={sectionRef} style={{ height: "200vh" }}>
+      <section
+        id="hero"
+        className="sticky top-0 flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-black"
+        style={{ height: "100vh" }}
+      >
+        {/* Spline 3D background — zoom is driven by scroll progress */}
+        <div
+          ref={viewerContainerRef}
+          className="absolute inset-0 z-0"
+          style={{
+            transform: `scale(${bgScale})`,
+            willChange: "transform",
+          }}
+        >
+          {viewerReady &&
+            React.createElement("spline-viewer", {
+              url: SPLINE_SCENE_URL,
+              className: "h-full w-full",
+              style: { display: "block", width: "100%", height: "100%" },
+            })}
         </div>
 
-      </div>
-    </section>
+        {/* Gradient overlay so text stays readable */}
+        <div
+          className="pointer-events-none absolute inset-0 z-10 bg-linear-to-b from-black/60 via-transparent to-black/80"
+          aria-hidden
+        />
+
+        {/* Black exit-fade overlay — fades in as the user finishes scrolling */}
+        <div
+          className="pointer-events-none absolute inset-0 z-30 bg-black"
+          style={{ opacity: exitOpacity }}
+          aria-hidden
+        />
+
+        {/* Hero content — fades out during the first half of the parallax scroll */}
+        <div
+          className="pointer-events-none relative z-20 flex w-full h-full flex-col"
+          style={{ opacity: contentOpacity }}
+        >
+          {/* PH Time widget — top right */}
+          {phTime.time && (
+            <div className="pointer-events-none absolute top-20 right-4 z-20 flex flex-col items-end gap-0.5 md:top-24 md:right-8">
+              <span className="font-[family-name:var(--font-orbitron)] text-sm font-bold tabular-nums tracking-widest text-white drop-shadow-lg md:text-base">
+                {phTime.time}
+              </span>
+              <span className="text-[10px] font-semibold tracking-widest text-white/60 uppercase">
+                {phTime.day}
+              </span>
+              <span className="text-[9px] tracking-wider text-white/40">
+                {phTime.date} · PH
+              </span>
+            </div>
+          )}
+
+          {/* Hero content wrapper */}
+          <div className="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-32 pb-20 md:pt-40 mx-auto">
+            
+            {/* Left and Right columns */}
+            <div className="flex w-full flex-col items-center justify-center gap-8 md:flex-row md:gap-12 lg:gap-16">
+              {/* Left: headline, tagline, buttons */}
+              <div className="flex flex-1 flex-col items-center text-center md:items-start md:text-left">
+                <div className="flex items-center overflow-hidden">
+                  <TypingAnimation
+                    as="h1"
+                    className="font-[family-name:var(--font-orbitron)] whitespace-nowrap text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl"
+                    words={["Hi, I'm Ya-m-i", "Fullstack Dev", "UI/UX Designer"]}
+                    loop
+                    showCursor
+                    cursorStyle="line"
+                    typeSpeed={65}
+                    deleteSpeed={35}
+                    pauseDelay={2200}
+                    startOnView={true}
+                  />
+                </div>
+                <p className="mt-4 text-lg text-white/90 sm:text-xl">
+                  Just Believe, Nothing is Impossible
+                </p>
+                <div className="mt-8 flex flex-wrap justify-center gap-4 [&_a]:pointer-events-auto [&_button]:pointer-events-auto md:justify-start">
+                  <a
+                    href="#projects"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="rounded-md bg-white px-5 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
+                  >
+                    View work
+                  </a>
+                  <ShimmerButton
+                    borderRadius="0.375rem"
+                    className="shadow-2xl"
+                    onClick={() =>
+                      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "center" })
+                    }
+                  >
+                    <span className="font-[family-name:var(--font-orbitron)] relative z-10 text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
+                      Get in touch
+                    </span>
+                  </ShimmerButton>
+                </div>
+              </div>
+
+              {/* Right: spinning text & orbital timeline */}
+              <div className="flex flex-1 items-center justify-center md:justify-end md:pr-20 lg:pr-40 xl:pr-48">
+                <div className="relative flex items-center justify-center max-w-[90vw]">
+                  <SpinningText
+                    reverse
+                    className="text-3xl font-bold uppercase text-white sm:text-[2.5rem]"
+                    duration={16}
+                    radius={7}
+                  >
+                    FULL • STACK • DEVELOPER •
+                  </SpinningText>
+                  
+                  <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-100">
+                    <RadialOrbitalTimeline timelineData={heroTimelineData} radius={115} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

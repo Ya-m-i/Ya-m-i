@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { LazySection } from "@/components/ui/lazy-section";
 import { Navbar } from "@/components/portfolio/Navbar";
 import { Hero } from "@/components/portfolio/Hero";
+import { Footer } from "@/components/portfolio/Footer";
 
 const About = dynamic(
   () => import("@/components/portfolio/About").then((m) => ({ default: m.default })),
@@ -45,6 +46,7 @@ export default function Page() {
       <LazySection>
         <Contact />
       </LazySection>
+      <Footer />
     </div>
   );
 }
