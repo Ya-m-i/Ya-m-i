@@ -6,6 +6,7 @@ import { Menu, User, Code2, FolderOpen, Mail, FileDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { withBasePath } from "@/lib/base-path";
 
 function scrollToSection(
   e: React.MouseEvent<HTMLAnchorElement>,
@@ -35,8 +36,8 @@ const NAV_LINKS: Array<{
 const linkClassName =
   "text-sm text-white/80 transition-colors hover:text-white";
 
-/** Put your CV at public/cv.pdf (or update this path) */
-const CV_URL = "/cv.pdf";
+/** Put your CV at public/Pacon-CV.pdf */
+const CV_URL = withBasePath("/Pacon-CV.pdf");
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);

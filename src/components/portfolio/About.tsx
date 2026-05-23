@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { Application } from "@splinetool/runtime";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import { Marquee } from "@/components/ui/marquee";
@@ -14,6 +15,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { withBasePath } from "@/lib/base-path";
+import Autoplay from "embla-carousel-autoplay";
 
 const ABOUT_SPLINE_SCENE_URL =
   "https://prod.spline.design/yTh9zZA29GxD5YcU/scene.splinecode";
@@ -154,7 +156,10 @@ function About() {
 
         <div className="relative z-10 flex w-full max-w-6xl flex-col items-center gap-12 px-4 md:flex-row md:items-center md:gap-16 lg:gap-20">
           {/* Left: Spline Sleek ID Badge (runtime = transparent bg + replace texture + set variables for name/education/location) */}
-          <div className="flex min-h-[380px] w-full flex-1 items-center justify-center md:min-h-[460px] lg:min-h-[520px]">
+          <div 
+            className="flex min-h-[380px] w-full flex-1 items-center justify-center md:min-h-[460px] lg:min-h-[520px]"
+            style={{ perspective: 1000 }}
+          >
             <canvas
               ref={canvasRef}
               className="h-full w-full min-h-[360px] rounded-lg md:min-h-[440px] lg:min-h-[500px]"
@@ -169,21 +174,19 @@ function About() {
 
           {/* Right: About text — min-height so position stays fixed when typing runs */}
           <div className="flex flex-1 flex-col justify-start text-center md:text-left">
-            <h2 className="text-2xl font-semibold text-white sm:text-3xl md:text-4xl">
+            <h2 className="font-[family-name:var(--font-orbitron)] text-2xl font-semibold text-white sm:text-3xl md:text-4xl">
               About
             </h2>
             <div className="mt-4 min-h-72 sm:min-h-80">
               <TypingAnimation
                 as="p"
                 className="text-base leading-relaxed text-white/90 sm:text-lg whitespace-pre-line"
+                words={["I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.\n\nI focus on learning, experimenting, and delivering solutions that not only work, but help people, simplify their work, and empower businesses. My journey is fueled by curiosity, growth, and the drive to create systems that truly change lives."]}
                 showCursor={false}
-                duration={4}
+                typeSpeed={18}
+                loop={false}
                 startOnView={true}
-              >
-                {`I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.
-
-I focus on learning, experimenting, and delivering solutions that not only work, but help people, simplify their work, and empower businesses. My journey is fueled by curiosity, growth, and the drive to create systems that truly change lives.`}
-              </TypingAnimation>
+              />
             </div>
           </div>
         </div>
@@ -196,7 +199,7 @@ I focus on learning, experimenting, and delivering solutions that not only work,
 
       {/* My Skills: heading + Marquee (single row, no reverse) */}
       <div id="skills" className="relative z-10 mt-8 w-full max-w-6xl px-4 md:mt-16">
-        <h3 className="text-center text-2xl font-semibold text-white sm:text-3xl">
+        <h3 className="font-[family-name:var(--font-orbitron)] text-center text-2xl font-semibold text-white sm:text-3xl">
           My Skills
         </h3>
         <div className="relative mt-8 flex w-full flex-col items-center justify-center overflow-hidden">
@@ -233,123 +236,143 @@ I focus on learning, experimenting, and delivering solutions that not only work,
   );
 }
 
+function TimelineCarousel({ title, description, items, type }: { title: string; description: string; items: { img: string, desc: string }[]; type: "certImages" | "badgeImages" | "achieveImages" }) {
+  const [selectedItem, setSelectedItem] = useState<{ img: string; desc: string; index: number } | null>(null);
+
+  const dotColors = {
+    certImages: "bg-emerald-400/70",
+    badgeImages: "bg-violet-400/70",
+    achieveImages: "bg-amber-400/70"
+  };
+
+  return (
+    <>
+      <div className="flex flex-col gap-4">
+        <div className="relative w-full md:px-12">
+          <Carousel 
+            opts={{ align: "start", loop: true }} 
+            plugins={[
+              Autoplay({
+                delay: 3500,
+              }),
+            ]}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-3">
+              {items.map((item, idx) => (
+                <CarouselItem key={idx} className="pl-3 sm:basis-2/3 md:basis-[70%] lg:basis-[80%]">
+                  <FeatureBlockCard 
+                    title={`${title.endsWith('s') ? title.slice(0, -1) : title} ${idx + 1}`}
+                    description={item.desc}
+                    image={withBasePath(`/images/${type}/${item.img}`)}
+                    onClick={() => setSelectedItem({ img: item.img, desc: item.desc, index: idx })}
+                    dotColor={dotColors[type]}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="hidden md:block">
+              <CarouselPrevious variant="ghost" className="bg-transparent border-none text-white/50 hover:bg-transparent hover:text-white hover:scale-110 transition-all" />
+              <CarouselNext variant="ghost" className="bg-transparent border-none text-white/50 hover:bg-transparent hover:text-white hover:scale-110 transition-all" />
+            </div>
+          </Carousel>
+        </div>
+      </div>
+
+      {/* Full View Modal */}
+      {selectedItem && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-4 transition-opacity duration-300"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div 
+            className="relative flex w-full max-w-4xl flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-neutral-950 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setSelectedItem(null)}
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+              aria-label="Close modal"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div className="relative w-full bg-black/60" style={{ aspectRatio: "16/9", maxHeight: "70vh" }}>
+              <Image
+                src={withBasePath(`/images/${type}/${selectedItem.img}`)}
+                alt={`${title} ${selectedItem.index + 1}`}
+                fill
+                className="object-contain p-2 md:p-6"
+              />
+            </div>
+            <div className="flex w-full flex-col gap-1 border-t border-white/10 bg-neutral-900/90 px-6 py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold tracking-widest text-[#a8a29e] uppercase">{title.endsWith('s') ? title.slice(0, -1) : title} {selectedItem.index + 1}</span>
+                <div className={`h-2 w-2 rounded-full ${dotColors[type]}`} />
+              </div>
+              <p className="text-base font-medium text-white">{selectedItem.desc}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
 export function TimelineDemo() {
   const data = [
     {
       title: "Certificates",
+      description: "These certifications represent my dedication to mastering in-demand technologies and strengthening my expertise in building efficient, scalable, and user-focused systems.",
       content: (
-        <div>
-          <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-            These certifications represent my dedication to mastering in-demand technologies and strengthening my expertise in building efficient, scalable, and user-focused systems.
-          </p>
-          <div className="relative w-full md:px-12">
-            <Carousel opts={{ align: "start" }} className="w-full">
-              <CarouselContent>
-                {[
-                  "CyberCert.png",
-                  "CapstoneCert.png",
-                  "EthicalCert.png",
-                  "JsCert.png",
-                  "NetworkingCert.png"
-                ].map((img, idx) => (
-                  <CarouselItem key={idx} className="md:basis-1/2">
-                    <div className="p-1">
-                      <Image
-                        src={withBasePath(`/images/certImages/${img}`)}
-                        alt={`Certificate ${idx + 1}`}
-                        width={500}
-                        height={500}
-                        className="h-20 w-full rounded-lg object-contain shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden md:block">
-                <CarouselPrevious />
-                <CarouselNext />
-              </div>
-            </Carousel>
-          </div>
-        </div>
+        <TimelineCarousel
+          title="Certificates"
+          description=""
+          items={[
+            { img: "CyberCert.png", desc: "Cybersecurity Fundamentals" },
+            { img: "CapstoneCert.png", desc: "Capstone Project Excellence" },
+            { img: "EthicalCert.png", desc: "Ethical Hacking Mastery" },
+            { img: "JsCert.png", desc: "JavaScript Development Mastery" },
+            { img: "NetworkingCert.png", desc: "Networking & Cloud Essentials" }
+          ]}
+          type="certImages"
+        />
       ),
     },
     {
       title: "Badges",
+      description: "A collection of achievement badges that demonstrate my practical competencies and ongoing development in building real-world, technology-driven solutions.",
       content: (
-        <div>
-          <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-            A collection of achievement badges that demonstrate my practical competencies and ongoing development in building real-world, technology-driven solutions.
-          </p>
-          <div className="relative w-full md:px-12">
-            <Carousel opts={{ align: "start" }} className="w-full">
-              <CarouselContent>
-                {[
-                  "JuniorBadge.png",
-                  "linuxBadge.png",
-                  "PNG.png",
-                  "CyberBadge.png"
-                ].map((img, idx) => (
-                  <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1">
-                      <Image
-                        src={withBasePath(`/images/badgeImages/${img}`)}
-                        alt={`Badge ${idx + 1}`}
-                        width={500}
-                        height={500}
-                        className="h-20 w-full rounded-lg object-contain shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden md:block">
-                <CarouselPrevious />
-                <CarouselNext />
-              </div>
-            </Carousel>
-          </div>
-        </div>
+        <TimelineCarousel
+          title="Badges"
+          description=""
+          items={[
+            { img: "JuniorBadge.png", desc: "Junior Developer Badge" },
+            { img: "linuxBadge.png", desc: "Linux Administration Badge" },
+            { img: "PNG.png", desc: "Core Technology Protocol" },
+            { img: "CyberBadge.png", desc: "Cybersecurity Analyst Badge" }
+          ]}
+          type="badgeImages"
+        />
       ),
     },
     {
       title: "Achievements",
+      description: "A collection of key achievements that reflect my dedication, performance, and ability to deliver meaningful results in academic and technical environments.",
       content: (
-        <div>
-          <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-            A collection of key achievements that reflect my dedication, performance, and ability to deliver meaningful results in academic and technical environments.
-          </p>
-          <div className="relative w-full md:px-12">
-            <Carousel opts={{ align: "start" }} className="w-full">
-              <CarouselContent>
-                {[
-                  "A1.png",
-                  "A2.png",
-                  "A3.png",
-                  "A4.png",
-                  "A5.png",
-                  "A6.png"
-                ].map((img, idx) => (
-                  <CarouselItem key={idx} className="md:basis-1/2">
-                    <div className="p-1">
-                      <Image
-                        src={withBasePath(`/images/achieveImages/${img}`)}
-                        alt={`Achievement ${idx + 1}`}
-                        width={500}
-                        height={500}
-                        className="h-20 w-full rounded-lg object-contain shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden md:block">
-                <CarouselPrevious />
-                <CarouselNext />
-              </div>
-            </Carousel>
-          </div>
-        </div>
+        <TimelineCarousel
+          title="Achieve"
+          description=""
+          items={[
+            { img: "A1.png", desc: "Excellence Award in Development" },
+            { img: "A2.png", desc: "Outstanding Project Contribution" },
+            { img: "A3.png", desc: "Top Performance Recognition" },
+            { img: "A4.png", desc: "Academic Achievement Award" },
+            { img: "A5.png", desc: "Technical Innovation Prize" },
+            { img: "A6.png", desc: "Leadership and Teamwork" }
+          ]}
+          type="achieveImages"
+        />
       ),
     },
   ];
@@ -362,3 +385,46 @@ export function TimelineDemo() {
 
 export default About;
 export { About };
+
+/** 
+ * Feature Block Animated Card Components 
+ * Based on user provided snippet
+ */
+
+function FeatureBlockCard({ 
+  title, 
+  description, 
+  image, 
+  onClick,
+  dotColor 
+}: { 
+  title: string; 
+  description: string; 
+  image: string; 
+  onClick?: () => void;
+  dotColor?: string;
+}) {
+  return (
+    <div className="w-full group/card cursor-pointer" onClick={onClick}>
+      <div
+        className="overflow-hidden relative h-96 rounded-xl shadow-xl w-full flex flex-col justify-between border-[5px] border-white/10 p-4 bg-cover bg-center"
+        style={{ backgroundImage: `url(${image})` }}
+      >
+        {/* Hover overlay */}
+        <div className="absolute inset-0 transition duration-300 group-hover/card:bg-black/60 rounded-xl" />
+        {/* Top badge */}
+        <div className="flex flex-row items-center space-x-2 z-10">
+          <div className={`h-2 w-2 rounded-full ${dotColor}`} />
+          <p className="font-medium text-[10px] text-white/70 relative z-10 tracking-widest uppercase">{title}</p>
+        </div>
+        {/* Bottom description */}
+        <div className="relative z-10">
+          <p className="font-semibold text-sm text-white/90 line-clamp-2 drop-shadow-md">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   motion,
+  AnimatePresence,
   useInView,
   type DOMMotionComponents,
   type HTMLMotionProps,
@@ -214,6 +215,8 @@ export function TypingAnimation({
     }
   };
 
+  const chars = Array.from(displayedText);
+
   return (
     <MotionComponent
       ref={elementRef}
@@ -224,13 +227,28 @@ export function TypingAnimation({
       )}
       {...props}
     >
-      {displayedText}
+      <AnimatePresence mode="popLayout">
+        {chars.map((char, i) => (
+          <motion.span
+            key={`${currentWordIndex}-${i}-${char}`}
+            className="inline"
+            initial={{ opacity: 0, filter: "blur(4px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(4px)" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {char}
+          </motion.span>
+        ))}
+      </AnimatePresence>
       {shouldShowCursor && (
-        <span
+        <motion.span
           className={cn("inline-block", blinkCursor && "animate-blink-cursor")}
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         >
           {getCursorChar()}
-        </span>
+        </motion.span>
       )}
     </MotionComponent>
   );

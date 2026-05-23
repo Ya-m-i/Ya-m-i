@@ -133,7 +133,7 @@ function Contact() {
       </div>
 
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-4">
-        <h2 className="mb-12 text-center text-3xl font-semibold text-white sm:text-4xl md:mb-16">
+        <h2 className="font-[family-name:var(--font-orbitron)] mb-12 text-center text-3xl font-semibold text-white sm:text-4xl md:mb-16">
           Contact
         </h2>
 

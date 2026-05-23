@@ -145,6 +145,8 @@ function YamiPOSProjectCard() {
   );
 }
 
+export const PROJECT_COUNT = 3;
+
 function Projects() {
   const slides = [
     <YamiPROProjectCard key="yamipro" />,
@@ -174,10 +176,11 @@ function Projects() {
       </div>
 
       <div className="relative z-10 w-full max-w-7xl px-4">
-        <h2 className="mb-12 text-center text-3xl font-semibold text-white sm:text-4xl md:mb-16">
+        <h2 className="font-[family-name:var(--font-orbitron)] mb-12 text-center text-3xl font-semibold text-white sm:text-4xl md:mb-16">
           Projects
         </h2>
         <MotionCarousel
+          autoPlay
           slides={slides}
           options={{ loop: true, align: "center", startIndex: 1 }}
           slideBasis="58%"

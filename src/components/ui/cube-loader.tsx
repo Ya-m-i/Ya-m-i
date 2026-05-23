@@ -3,9 +3,9 @@
 import { cn } from "@/lib/utils";
 import React from 'react'
 
-export function LoadingScreen() {
+export default function CubeLoader() {
   return (
-    <div className='fixed inset-0 z-[100] flex flex-col items-center justify-center gap-12 p-12 bg-black perspective-container'>
+    <div className='flex flex-col items-center justify-center gap-12 p-12 min-h-[400px] bg-slate-950/0 perspective-container'>
       
       {/* 3D Scene Wrapper */}
       <div className='relative w-24 h-24 flex items-center justify-center preserve-3d'>
@@ -58,13 +58,13 @@ export function LoadingScreen() {
 
       {/* Loading Text */}
       <div className='flex flex-col items-center gap-1 mt-2'>
-        <h3 className='font-[family-name:var(--font-orbitron)] text-sm font-semibold tracking-[0.3em] text-cyan-300 uppercase'>
-          Loading
-        </h3>
-        <p className='text-xs text-slate-400'>
-          Preparing your experience, please wait…
-        </p>
-      </div>
+  <h3 className='text-sm font-semibold tracking-[0.3em] text-cyan-300 uppercase'>
+    Loading
+  </h3>
+  <p className='text-xs text-slate-400'>
+    Preparing your experience, please wait…
+  </p>
+</div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .perspective-container {

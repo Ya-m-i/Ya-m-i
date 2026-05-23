@@ -12,6 +12,8 @@ export interface MotionCarouselProps {
   className?: string;
   /** Slide width as CSS value (e.g. "100%", "55%"). Less than 100% shows peek of adjacent slides. */
   slideBasis?: string;
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
 }
 
 export function MotionCarousel({
@@ -19,6 +21,8 @@ export function MotionCarousel({
   options = { loop: true, align: "center" },
   className,
   slideBasis = "100%",
+  autoPlay = false,
+  autoPlayInterval = 4000,
 }: MotionCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     ...options,
@@ -43,6 +47,34 @@ export function MotionCarousel({
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi]);
+
+  React.useEffect(() => {
+    if (!emblaApi || !autoPlay) return;
+
+    let autoplayTimer: NodeJS.Timeout;
+    
+    const play = () => {
+      autoplayTimer = setInterval(() => {
+        if (emblaApi.canScrollNext()) {
+          emblaApi.scrollNext();
+        } else {
+          emblaApi.scrollTo(0);
+        }
+      }, autoPlayInterval);
+    };
+
+    const stop = () => clearInterval(autoplayTimer);
+
+    play();
+
+    emblaApi.on("pointerDown", stop);
+    emblaApi.on("pointerUp", () => {
+      stop();
+      play();
+    });
+
+    return stop;
+  }, [emblaApi, autoPlay, autoPlayInterval]);
 
   if (!slides.length) return null;
 
