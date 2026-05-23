@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import emailjs from '@emailjs/browser';
 import { GithubIcon, InstagramIcon, LinkedinIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ const SOCIAL_LINKS = [
 ] as const;
 
 function Contact() {
+  const form = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [activeScanImage, setActiveScanImage] = useState(SOCIAL_LINKS[0].image);
@@ -80,36 +82,37 @@ function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      message: formData.get("message"),
-      _subject: "New Message from Portfolio!",
-      _captcha: "false"
+    if (!form.current) return;
+
+    const formData = new FormData(form.current);
+    const templateParams = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      message: formData.get("message") as string,
     };
 
     try {
-      const response = await fetch("https://formsubmit.co/ajax/kycirshanepacon@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await emailjs.send(
+        "service_epcp67b",
+        "template_6dyc6uk",
+        templateParams,
+        { publicKey: "126mmDo4qxrN3ztqf" }
+      );
 
-      if (response.ok) {
+      if (response.text === "OK") {
         setIsSuccess(true);
+        form.current.reset();
       } else {
-        alert("Something went wrong. Please try again.");
+        alert(`Unexpected response: ${response.text}`);
       }
-    } catch (error) {
-      alert("Error sending message. Please try again later.");
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      alert(`Error ${err?.status ?? ""}: ${err?.text ?? "Something went wrong. Please try again."}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <section
@@ -233,7 +236,7 @@ function Contact() {
               ) : (
                 <>
                   <h3 className="mb-8 text-2xl font-semibold text-white">Send a Message</h3>
-                  <form className="grid gap-6" onSubmit={handleSubmit}>
+                  <form ref={form} className="grid gap-6" onSubmit={handleSubmit}>
                     <div className="grid gap-2">
                       <Label htmlFor="contact-name" className="text-white/90">
                         Name
