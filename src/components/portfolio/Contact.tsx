@@ -141,10 +141,21 @@ function Contact() {
         </h2>
 
         <div className="flex w-full max-w-5xl flex-col gap-16 lg:flex-row lg:items-center lg:justify-between">
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes float {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-15px); }
+            }
+            .animate-float {
+              animation: float 4s ease-in-out infinite;
+            }
+          `}} />
+
           {/* Left Split: Scan Image & Socials */}
           <div className="flex w-full flex-col items-center lg:w-1/2">
             <h3 className="mb-8 text-xl font-medium text-white/90">Connect Across Platforms</h3>
-            <div className="mb-4 flex aspect-square w-[380px] max-w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl pointer-events-none transition-all duration-300">
+            {/* The whole box now floats */}
+            <div className="mb-4 flex aspect-square w-[380px] max-w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl pointer-events-none transition-all duration-300 animate-float">
               <div className="relative h-full w-full">
                 <Image 
                   key={activeScanImage}
@@ -235,7 +246,12 @@ function Contact() {
                 </div>
               ) : (
                 <>
-                  <h3 className="mb-8 text-2xl font-semibold text-white">Send a Message</h3>
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-semibold text-white tracking-wide">Let's Build Together</h3>
+                    <p className="text-white/60 mt-2 text-sm leading-relaxed">
+                      Have a vision in mind? Send me a message and let's explore how we can turn your ideas into functional, real-world solutions.
+                    </p>
+                  </div>
                   <form ref={form} className="grid gap-6" onSubmit={handleSubmit}>
                     <div className="grid gap-2">
                       <Label htmlFor="contact-name" className="text-white/90">

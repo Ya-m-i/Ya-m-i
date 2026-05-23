@@ -239,6 +239,7 @@ function About() {
       .catch(console.error);
 
     return () => {
+      app.dispose();
       appRef.current = null;
     };
   }, [splineLoaded]);
@@ -584,7 +585,7 @@ function FeatureBlockCard({
   return (
     <div className="w-full group/card cursor-pointer" onClick={onClick}>
       <div
-        className="overflow-hidden relative h-96 rounded-xl shadow-xl w-full flex flex-col justify-between border-[5px] border-white/10 p-4 bg-cover bg-center"
+        className="overflow-hidden relative h-96 rounded-2xl shadow-2xl w-full flex flex-col justify-between border-2 border-white/10 bg-white/5 p-4 bg-cover bg-center"
         style={{ backgroundImage: `url(${image})` }}
       >
         {/* Hover overlay */}
