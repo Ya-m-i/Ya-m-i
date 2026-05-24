@@ -158,7 +158,7 @@ function Projects() {
     <section
       id="projects"
       className={cn(
-        "relative flex min-h-screen w-full flex-col items-center justify-center",
+        "relative z-20 flex min-h-screen w-full flex-col items-center justify-center -mt-[100vh]",
         "overflow-hidden bg-black py-20 md:py-28"
       )}
     >

@@ -375,39 +375,41 @@ function About() {
           <TimelineDemo />
         </div>
 
-        {/* My Skills */}
-        <div id="skills" className="relative z-10 mt-8 w-full max-w-6xl px-4 md:mt-16 mx-auto pb-16">
-          <h3 className="font-[family-name:var(--font-orbitron)] text-center text-2xl font-semibold text-white sm:text-3xl">
-            My Skills
-          </h3>
-          <div className="relative mt-8 flex w-full flex-col items-center justify-center overflow-hidden">
-            <Marquee pauseOnHover className="[--duration:20s] [--gap:2rem]" repeat={4}>
-              {SKILL_LOGOS.map((name) => {
-                const url = SKILL_LINKS[name];
-                return (
-                  <a
-                    key={name}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10 md:h-24 md:w-32"
-                    aria-label={`${name} - open official site`}
-                  >
-                    <Image
-                      src={withBasePath(`/images/${name}.png`)}
-                      alt=""
-                      width={96}
-                      height={96}
-                      sizes="(max-width: 768px) 56px, 64px"
-                      className="max-h-14 w-auto object-contain md:max-h-16"
-                      loading="lazy"
-                    />
-                  </a>
-                );
-              })}
-            </Marquee>
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-black to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-black to-transparent" />
+        {/* My Skills - Parallax sticky section */}
+        <div className="relative w-full h-[200vh] z-0">
+          <div id="skills" className="sticky top-0 h-screen w-full flex flex-col items-center justify-center px-4 md:px-16 mx-auto pb-16 overflow-hidden">
+            <h3 className="font-[family-name:var(--font-orbitron)] text-center text-2xl font-semibold text-white sm:text-3xl">
+              My Skills
+            </h3>
+            <div className="relative mt-8 flex w-full max-w-6xl flex-col items-center justify-center overflow-hidden mx-auto">
+              <Marquee pauseOnHover className="[--duration:20s] [--gap:2rem]" repeat={4}>
+                {SKILL_LOGOS.map((name) => {
+                  const url = SKILL_LINKS[name];
+                  return (
+                    <a
+                      key={name}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10 md:h-24 md:w-32"
+                      aria-label={`${name} - open official site`}
+                    >
+                      <Image
+                        src={withBasePath(`/images/${name}.png`)}
+                        alt=""
+                        width={96}
+                        height={96}
+                        sizes="(max-width: 768px) 56px, 64px"
+                        className="max-h-14 w-auto object-contain md:max-h-16"
+                        loading="lazy"
+                      />
+                    </a>
+                  );
+                })}
+              </Marquee>
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-black to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-black to-transparent z-10" />
+            </div>
           </div>
         </div>
       </div>
