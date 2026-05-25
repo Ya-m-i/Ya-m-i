@@ -12,6 +12,8 @@ export interface MotionCarouselProps {
   className?: string;
   /** Slide width as CSS value (e.g. "100%", "55%"). Less than 100% shows peek of adjacent slides. */
   slideBasis?: string;
+  /** Custom class name applied to each individual slide wrapper (useful for responsive basis like basis-[85%] md:basis-[58%]) */
+  slideClassName?: string;
   autoPlay?: boolean;
   autoPlayInterval?: number;
 }
@@ -21,6 +23,7 @@ export function MotionCarousel({
   options = { loop: true, align: "center" },
   className,
   slideBasis = "100%",
+  slideClassName,
   autoPlay = false,
   autoPlayInterval = 4000,
 }: MotionCarouselProps) {
@@ -85,8 +88,8 @@ export function MotionCarousel({
           {slides.map((slide, index) => (
             <div
               key={index}
-              className="relative min-w-0 shrink-0 grow-0"
-              style={{ flexBasis: slideBasis }}
+              className={cn("relative min-w-0 shrink-0 grow-0", slideClassName)}
+              style={slideBasis ? { flexBasis: slideBasis } : undefined}
             >
               <motion.div
                 className="flex h-full w-full items-center justify-center px-2"

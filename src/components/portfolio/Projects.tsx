@@ -67,7 +67,7 @@ const YAMIPOS_LIVE_URL = "#";
 
 function BlankProjectCard() {
   return (
-    <div className="mx-auto flex h-[350px] w-[400px] items-center justify-center rounded-3xl border border-dashed border-white/20 bg-neutral-950/40 ring-1 ring-neutral-700/20 dark:bg-neutral-900/30">
+    <div className="mx-auto flex h-[350px] w-full max-w-[400px] items-center justify-center rounded-3xl border border-dashed border-white/20 bg-neutral-950/40 ring-1 ring-neutral-700/20 dark:bg-neutral-900/30">
       <p className="text-sm text-white/50">Coming soon</p>
     </div>
   );
@@ -79,7 +79,7 @@ function AgriChainProjectCard() {
       href={AGRICHAIN_LIVE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="mx-auto block h-[350px] w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
+      className="mx-auto block h-auto min-h-[350px] w-full max-w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
       aria-label="AgriChain - open live site"
     >
       <div className="mb-3 text-center">
@@ -90,7 +90,7 @@ function AgriChainProjectCard() {
           A blockchain-based platform that ensures transparency, traceability, and streamlined insurance processing in the agricultural supply chain.
         </p>
       </div>
-      <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
+      <div className="mx-auto h-[250px] w-full max-w-[300px] overflow-hidden rounded-[10px]">
         <ThreeDMarquee images={AGRICHAIN_IMAGES} className="h-full w-full" />
       </div>
     </a>
@@ -103,7 +103,7 @@ function YamiPROProjectCard() {
       href={YAMIPRO_LIVE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="mx-auto block h-[350px] w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
+      className="mx-auto block h-auto min-h-[350px] w-full max-w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
       aria-label="YamiPRO - open live site"
     >
       <div className="mb-3 text-center">
@@ -114,7 +114,7 @@ function YamiPROProjectCard() {
           A web-based procurement system that streamlines workflows and improves efficiency through automation.
         </p>
       </div>
-      <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
+      <div className="mx-auto h-[250px] w-full max-w-[300px] overflow-hidden rounded-[10px]">
         <ThreeDMarquee images={YAMIPRO_IMAGES} className="h-full w-full" />
       </div>
     </a>
@@ -127,7 +127,7 @@ function YamiPOSProjectCard() {
       href={YAMIPOS_LIVE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="mx-auto block h-[350px] w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
+      className="mx-auto block h-auto min-h-[350px] w-full max-w-[400px] rounded-3xl bg-neutral-950/80 p-4 ring-1 ring-neutral-700/20 transition-colors hover:bg-neutral-950/90 dark:bg-neutral-900/50 dark:hover:bg-neutral-900/60"
       aria-label="YamiPOS - open live site"
     >
       <div className="mb-3 text-center">
@@ -138,7 +138,7 @@ function YamiPOSProjectCard() {
           A point-of-sale & Inventory system designed to streamline transactions and improve sales management efficiency.
         </p>
       </div>
-      <div className="mx-auto h-[250px] w-[300px] overflow-hidden rounded-[10px]">
+      <div className="mx-auto h-[250px] w-full max-w-[300px] overflow-hidden rounded-[10px]">
         <ThreeDMarquee images={YAMIPOS_IMAGES} className="h-full w-full" />
       </div>
     </a>
@@ -183,7 +183,8 @@ function Projects() {
           autoPlay
           slides={slides}
           options={{ loop: true, align: "center", startIndex: 1 }}
-          slideBasis="58%"
+          slideBasis=""
+          slideClassName="basis-[85%] md:basis-[58%]"
         />
       </div>
     </section>

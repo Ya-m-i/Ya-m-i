@@ -77,8 +77,7 @@ function About() {
 
   // Scroll-driven animation values
   const [textOpacity, setTextOpacity] = useState(1);
-  const [cardX, setCardX] = useState(0);
-  const [cardScale, setCardScale] = useState(1);
+  const [cardTransform, setCardTransform] = useState("translate(calc(25vw - 220px), -50%) scale(1)");
   const [expOpacity, setExpOpacity] = useState(0);
 
   // Scroll math (4 phases, each = 1 viewport height = 400vh total wrapper)
@@ -104,25 +103,51 @@ function About() {
       // Text fade: 1 → 0 over phase1
       const tOpacity = Math.max(0, 1 - Math.min(1, p1));
 
-      // Card: during phase1 stays put; phase2 moves center + zooms; phase3 moves right
-      let cX = 0;       // 0 = left-col position (default)
-      let cScale = 1;
+      const width = window.innerWidth;
+      const isMobile = width < 768;
 
-      if (rawProgress >= 0.25 && rawProgress < 0.5) {
-        // Move from left-col → center of viewport (translateX 0 → +25vw) and zoom 1→1.25
-        const t = Math.min(1, Math.max(0, p2));
-        cX = t * 25;       // vw — center is halfway between left (0) and right (50)
-        cScale = 1 + t * 0.25;
-      } else if (rawProgress >= 0.5 && rawProgress < 0.75) {
-        // Move center → right col (where about text was: justify-end pr-24, ~75% of viewport)
-        // Card left = calc(25% - 220px), so to center card at 75%: translate +50vw total
-        const t = Math.min(1, Math.max(0, p3));
-        cX = 25 + t * 25;  // 25vw → 50vw
-        cScale = 1.25 - t * 0.3; // zoom back down to 0.95
-      } else if (rawProgress >= 0.75) {
-        // Settled in right col — matching original right text panel position
-        cX = 50;
-        cScale = 0.95;
+      let tTransform = "";
+
+      if (!isMobile) {
+        // --- DESKTOP MATH ---
+        // Base left alignments: 
+        // 0% translates to 25% of screen width visually (left side).
+        let cX = 0;       
+        let cScale = 1;
+
+        if (rawProgress >= 0.25 && rawProgress < 0.5) {
+          const t = Math.min(1, Math.max(0, p2));
+          cX = t * 25;       
+          cScale = 1 + t * 0.25;
+        } else if (rawProgress >= 0.5 && rawProgress < 0.75) {
+          const t = Math.min(1, Math.max(0, p3));
+          cX = 25 + t * 25;  
+          cScale = 1.25 - t * 0.3; 
+        } else if (rawProgress >= 0.75) {
+          cX = 50;
+          cScale = 0.95;
+        }
+        tTransform = `translate(calc(25vw - 220px + ${cX}vw), -50%) scale(${cScale})`;
+      } else {
+        // --- MOBILE MATH ---
+        // We center it horizontally: 50vw - 220px. 
+        // Vertically: Base center is 50%. We offset with vh changes.
+        let cY = 28; // Start lower in bottom half
+        let cScale = 0.55; // Much smaller on mobile screens
+        
+        if (rawProgress >= 0.25 && rawProgress < 0.5) {
+          const t = Math.min(1, Math.max(0, p2));
+          cY = 28 - t * 28; // Slide up to center
+          cScale = 0.55 + t * 0.1; // Zoom slightly to 0.65
+        } else if (rawProgress >= 0.5 && rawProgress < 0.75) {
+          const t = Math.min(1, Math.max(0, p3));
+          cY = 0 - t * 28; // Slide up to top half
+          cScale = 0.65 - t * 0.15; // Shrink it out of the way to 0.50
+        } else if (rawProgress >= 0.75) {
+          cY = -28;
+          cScale = 0.5;
+        }
+        tTransform = `translate(calc(50vw - 220px), calc(-50% + ${cY}vh)) scale(${cScale})`;
       }
 
       // Exp panel: fades in during phase3
@@ -131,8 +156,7 @@ function About() {
         : 0;
 
       setTextOpacity(tOpacity);
-      setCardX(cX);
-      setCardScale(cScale);
+      setCardTransform(tTransform);
       setExpOpacity(eOpacity);
     };
 
@@ -275,17 +299,17 @@ function About() {
 
           {/* ── PHASE 0 & 1: About text (title + paragraph) fades out ── */}
           <div
-            className="pointer-events-none absolute inset-0 flex items-center justify-end pr-8 md:pr-16 lg:pr-24 z-10"
+            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-center md:items-center justify-start md:justify-end pt-16 md:pt-0 md:pr-16 lg:pr-24 z-30 px-6 sm:px-12 md:px-0"
             style={{
               opacity: textOpacity,
               transition: "opacity 0.05s linear",
             }}
           >
-            <div className="flex max-w-lg flex-col justify-start text-center md:text-left">
-              <h2 className="font-[family-name:var(--font-orbitron)] text-2xl font-semibold text-white sm:text-3xl md:text-4xl">
+            <div className="flex max-w-lg flex-col justify-start text-center md:text-left drop-shadow-xl">
+              <h2 className="font-[family-name:var(--font-orbitron)] text-xl font-semibold text-white sm:text-3xl md:text-4xl">
                 About
               </h2>
-              <div className="mt-4 flex flex-col gap-4 min-h-72 sm:min-h-80 text-justify text-base leading-relaxed text-white/90 sm:text-lg">
+              <div className="mt-2 flex flex-col gap-2 sm:gap-4 md:min-h-72 sm:min-h-80 text-justify text-sm leading-relaxed text-white/90 sm:text-lg">
                 <p>
                   I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.
                 </p>
@@ -298,13 +322,9 @@ function About() {
 
           {/* ── 3D CARD: animates position & scale across phases ── */}
           <div
-            className="absolute z-20"
+            className="absolute z-20 left-0 top-1/2 w-[440px] h-[520px]"
             style={{
-              top: "50%",
-              left: "calc(25% - 220px)",
-              width: "440px",
-              height: "520px",
-              transform: `translate(${cardX}vw, -50%) scale(${cardScale})`,
+              transform: cardTransform,
               transition: "transform 0.08s linear",
               willChange: "transform",
             }}
@@ -322,42 +342,42 @@ function About() {
 
           {/* ── WORK EXPERIENCE: fades in on the LEFT while card moves right ── */}
           <div
-            className="pointer-events-none absolute inset-0 flex items-center justify-start pl-8 md:pl-16 lg:pl-24 z-10"
+            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-center justify-end md:justify-start pb-8 md:pb-0 md:pl-16 lg:pl-24 z-30 px-6 sm:px-12 md:px-0"
             style={{
               opacity: expOpacity,
               transition: "opacity 0.08s linear",
             }}
           >
-            <div className="flex max-w-md flex-col gap-6">
+            <div className="flex max-w-md flex-col gap-4 md:gap-6 drop-shadow-xl">
               {/* Section label */}
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
                 <p className="text-[10px] font-bold tracking-[0.25em] text-white/40 uppercase">
                   My Work Experiences
                 </p>
                 <h3 className="font-[family-name:var(--font-orbitron)] text-xl font-bold tracking-widest text-white sm:text-2xl">
                   E X P E R I E N C E
                 </h3>
-                <div className="mt-1 h-px w-16 bg-gradient-to-r from-white/60 to-transparent" />
+                <div className="mt-1 h-px w-16 bg-gradient-to-r from-transparent via-white/60 to-transparent md:from-white/60 md:to-transparent" />
               </div>
 
               {/* Experience entries */}
-              <div className="flex flex-col gap-8">
+              <div className="flex flex-col gap-4 md:gap-8">
                 {EXPERIENCE_ENTRIES.map((entry, i) => (
-                  <div key={i} className="flex flex-col gap-1.5">
+                  <div key={i} className="flex flex-col gap-1 md:gap-1.5">
                     {/* Org + period */}
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] font-semibold tracking-widest text-white/50 uppercase">
+                    <div className="flex flex-col gap-0 md:gap-0.5">
+                      <span className="text-[9px] md:text-[11px] font-semibold tracking-widest text-white/50 uppercase">
                         {entry.org}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="font-[family-name:var(--font-orbitron)] text-sm font-bold text-white">
+                        <span className="font-[family-name:var(--font-orbitron)] text-xs md:text-sm font-bold text-white leading-tight">
                           {entry.role}
                         </span>
-                        <span className="text-[10px] text-white/40">I {entry.period}</span>
+                        <span className="text-[9px] md:text-[10px] text-white/40">I {entry.period}</span>
                       </div>
                     </div>
                     {/* Description */}
-                    <p className="text-sm text-justify text-white/70 leading-relaxed mt-1">
+                    <p className="text-xs md:text-sm text-justify text-white/70 leading-relaxed mt-0.5 md:mt-1">
                       {entry.description}
                     </p>
                   </div>

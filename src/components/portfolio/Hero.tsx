@@ -224,16 +224,17 @@ export function Hero() {
           )}
 
           {/* Hero content wrapper */}
-          <div className="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-32 pb-20 md:pt-40 mx-auto">
+          <div className="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-24 pb-8 md:pt-40 md:pb-20 mx-auto">
             
-            {/* Left and Right columns */}
-            <div className="flex w-full flex-col items-center justify-center gap-8 md:flex-row md:gap-12 lg:gap-16">
-              {/* Left: headline, tagline, buttons */}
-              <div className="flex flex-1 flex-col items-center text-center md:items-start md:text-left">
+            {/* Responsive Grid Layout */}
+            <div className="flex w-full flex-col items-center justify-center gap-6 sm:gap-8 md:grid md:grid-cols-2 md:gap-x-12 lg:gap-x-16 md:grid-rows-[auto_auto]">
+              
+              {/* Part 1: Headline & Tagline (Top on mobile, Top-Left on desktop) */}
+              <div className="order-1 flex flex-col items-center text-center md:col-start-1 md:row-start-1 md:items-start md:text-left md:self-end z-10">
                 <div className="flex items-center overflow-hidden">
                   <TypingAnimation
                     as="h1"
-                    className="font-[family-name:var(--font-orbitron)] whitespace-nowrap text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl"
+                    className="font-[family-name:var(--font-orbitron)] whitespace-nowrap text-[1.4rem] font-bold tracking-tight text-white sm:text-4xl md:text-5xl"
                     words={["Hi, I'm Ya-m-i", "Fullstack Dev", "UI/UX Designer"]}
                     loop
                     showCursor
@@ -244,50 +245,54 @@ export function Hero() {
                     startOnView={true}
                   />
                 </div>
-                <p className="mt-4 text-lg text-white/90 sm:text-xl">
+                <p className="mt-3 text-base text-white/90 sm:text-xl sm:mt-4 shadow-black drop-shadow-md">
                   Just Believe, Nothing is Impossible
                 </p>
-                <div className="mt-8 flex flex-wrap justify-center gap-4 [&_a]:pointer-events-auto [&_button]:pointer-events-auto md:justify-start">
-                  <a
-                    href="#projects"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="rounded-md bg-white px-5 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
-                  >
-                    View work
-                  </a>
-                  <ShimmerButton
-                    borderRadius="0.375rem"
-                    className="shadow-2xl"
-                    onClick={() =>
-                      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "center" })
-                    }
-                  >
-                    <span className="font-[family-name:var(--font-orbitron)] relative z-10 text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
-                      Get in touch
-                    </span>
-                  </ShimmerButton>
+              </div>
+
+              {/* Part 2: Spinning Text & Radial Timeline (Middle on mobile, Right spanning 2 rows on desktop) */}
+              <div className="order-2 flex w-full items-center justify-center my-2 sm:my-0 md:col-start-2 md:row-start-1 md:row-span-2 md:justify-end md:pr-20 lg:pr-40 xl:pr-48">
+                <div className="relative flex items-center justify-center w-64 h-64 sm:w-80 sm:h-80 max-w-[90vw] shrink-0">
+                  <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-100 origin-center pointer-events-none">
+                    <SpinningText
+                      reverse
+                      className="text-3xl font-bold uppercase text-white sm:text-[2.5rem]"
+                      duration={16}
+                      radius={7}
+                    >
+                      FULL • STACK • DEVELOPER •
+                    </SpinningText>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+                      <RadialOrbitalTimeline timelineData={heroTimelineData} radius={115} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Right: spinning text & orbital timeline */}
-              <div className="flex flex-1 items-center justify-center md:justify-end md:pr-20 lg:pr-40 xl:pr-48">
-                <div className="relative flex items-center justify-center max-w-[90vw]">
-                  <SpinningText
-                    reverse
-                    className="text-3xl font-bold uppercase text-white sm:text-[2.5rem]"
-                    duration={16}
-                    radius={7}
-                  >
-                    FULL • STACK • DEVELOPER •
-                  </SpinningText>
-                  
-                  <div className="absolute inset-0 flex items-center justify-center scale-90 sm:scale-100">
-                    <RadialOrbitalTimeline timelineData={heroTimelineData} radius={115} />
-                  </div>
-                </div>
+              {/* Part 3: Action Buttons (Bottom on mobile, Bottom-Left on desktop) */}
+              <div className="order-3 flex w-full flex-wrap justify-center gap-3 sm:gap-4 [&_a]:pointer-events-auto [&_button]:pointer-events-auto md:mt-6 md:col-start-1 md:row-start-2 md:justify-start md:self-start z-10">
+                <a
+                  href="#projects"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="rounded-md bg-white px-5 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
+                >
+                  View work
+                </a>
+                <ShimmerButton
+                  borderRadius="0.375rem"
+                  className="shadow-2xl"
+                  onClick={() =>
+                    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                >
+                  <span className="font-[family-name:var(--font-orbitron)] relative z-10 text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
+                    Get in touch
+                  </span>
+                </ShimmerButton>
               </div>
             </div>
 
