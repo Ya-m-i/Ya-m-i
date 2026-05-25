@@ -251,7 +251,7 @@ export function Hero() {
               </div>
 
               {/* Part 2: Spinning Text & Radial Timeline (Middle on mobile, Right spanning 2 rows on desktop) */}
-              <div className="order-2 flex w-full items-center justify-center my-2 sm:my-0 md:col-start-2 md:row-start-1 md:row-span-2 md:justify-end md:pr-20 lg:pr-40 xl:pr-48">
+              <div className="order-2 flex w-full items-center justify-center my-2 sm:my-0 md:col-start-2 md:row-start-1 md:row-span-2 md:justify-end">
                 <div className="relative flex items-center justify-center w-64 h-64 sm:w-80 sm:h-80 max-w-[90vw] shrink-0">
                   <div className="absolute inset-0 flex items-center justify-center scale-[0.85] sm:scale-100 origin-center pointer-events-none">
                     <SpinningText
