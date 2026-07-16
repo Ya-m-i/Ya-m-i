@@ -42,11 +42,11 @@ const heroTimelineData: TimelineItem[] = [
 function hideSplineWatermark(viewerEl: HTMLElement) {
   const root = viewerEl.shadowRoot;
   if (!root) return;
-  const link = root.querySelector('a[href*="spline"]');
-  if (link) (link as HTMLElement).style.setProperty("display", "none");
+  const logo = root.querySelector("#logo") || root.querySelector('a[href*="spline"]');
+  if (logo) (logo as HTMLElement).style.setProperty("display", "none", "important");
   root.querySelectorAll("a").forEach((a) => {
     if (a.textContent?.toLowerCase().includes("spline")) {
-      (a as HTMLElement).style.setProperty("display", "none");
+      (a as HTMLElement).style.setProperty("display", "none", "important");
     }
   });
 }
@@ -61,6 +61,10 @@ export function Hero() {
   const [bgScale, setBgScale] = useState(1.25);
   const [contentOpacity, setContentOpacity] = useState(1);
   const [exitOpacity, setExitOpacity] = useState(0);
+  
+  // Track mobile state and delayed loading to prevent freeze
+  const [isMobile, setIsMobile] = useState(false);
+  const [showViewer, setShowViewer] = useState(false);
 
   useEffect(() => {
     const tick = () => {
@@ -79,11 +83,19 @@ export function Hero() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
+    // Check if mobile to apply optimizations
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    
     if (customElements.get("spline-viewer")) {
       queueMicrotask(() => setViewerReady(true));
-      return;
+    } else {
+      customElements.whenDefined("spline-viewer").then(() => setViewerReady(true));
     }
-    customElements.whenDefined("spline-viewer").then(() => setViewerReady(true));
+    
+    // Wait one layout frame so the container has real pixel dimensions before WebGL init
+    requestAnimationFrame(() => setShowViewer(true));
   }, []);
 
   // Parallax scroll handler
@@ -97,8 +109,10 @@ export function Hero() {
       // progress: 0 at top, 1 when scrolled one viewport past the hero
       const progress = Math.min(Math.max(scrollY / parallaxZone, 0), 1);
 
-      // Scale: 1.25 → 1.8
-      const scale = 1.25 + progress * (1.8 - 1.25);
+      // Scale: less aggressive on mobile so it doesn't zoom too far in
+      const baseScale = window.innerWidth < 768 ? 0.75 : 1.25;
+      const targetScale = window.innerWidth < 768 ? 1.15 : 1.8;
+      const scale = baseScale + progress * (targetScale - baseScale);
 
       // Content fades out during the first 50% of the parallax scroll
       const contentFade = Math.max(0, 1 - progress / 0.5);
@@ -123,43 +137,55 @@ export function Hero() {
     // Use capture phase to intercept and kill events before Spline processes them
     const blockInteraction = (e: Event) => {
       // We STOP propagation so the Spline viewer doesn't receive the event (no zoom/pan)
-      // but we do NOT call preventDefault() for the wheel event so the page can still scroll.
-      if (e.type !== "wheel") {
+      // We do NOT call preventDefault() for wheel/touch so the page can still scroll natively.
+      if (e.type !== "wheel" && e.type !== "touchstart" && e.type !== "touchmove") {
         e.preventDefault();
       }
       e.stopPropagation();
     };
 
     // Block zooming in Spline but allow page scroll:
-    // We use capture: true to catch the event before it reaches the Spline viewer.
-    // We do NOT call preventDefault() on wheel, so the page scrolls.
     container.addEventListener("wheel", blockInteraction, { capture: true, passive: true });
     container.addEventListener("mousedown", blockInteraction, { capture: true });
-    container.addEventListener("touchstart", blockInteraction, { capture: true });
+    container.addEventListener("touchstart", blockInteraction, { capture: true, passive: true });
+    container.addEventListener("touchmove", blockInteraction, { capture: true, passive: true });
 
     return () => {
       container.removeEventListener("wheel", blockInteraction, { capture: true });
       container.removeEventListener("mousedown", blockInteraction, { capture: true } as EventListenerOptions);
       container.removeEventListener("touchstart", blockInteraction, { capture: true } as EventListenerOptions);
+      container.removeEventListener("touchmove", blockInteraction, { capture: true } as EventListenerOptions);
     };
   }, []);
 
   useEffect(() => {
-    if (!viewerReady || !viewerContainerRef.current) return;
+    // Only run when BOTH viewerReady is true and showViewer has toggled on, AND component is mounted
+    if (!viewerReady || !showViewer || !viewerContainerRef.current) return;
     const container = viewerContainerRef.current;
     let viewer: Element | null = null;
     const hide = () => viewer && hideSplineWatermark(viewer as HTMLElement);
+    
+    const onLoadComplete = () => {
+      hide();
+      window.dispatchEvent(new Event("hero-spline-loaded"));
+    };
+    
     const id = requestAnimationFrame(() => {
       viewer = container.querySelector("spline-viewer");
       if (!viewer) return;
-      viewer.addEventListener("load-complete", hide);
+      viewer.addEventListener("load-complete", onLoadComplete);
       hide();
+      
+      // Backup timeouts in case the shadow DOM injects the logo slightly late after remount
+      setTimeout(hide, 100);
+      setTimeout(hide, 1000);
+      setTimeout(hide, 2000);
     });
     return () => {
       cancelAnimationFrame(id);
-      viewer?.removeEventListener("load-complete", hide);
+      viewer?.removeEventListener("load-complete", onLoadComplete);
     };
-  }, [viewerReady]);
+  }, [viewerReady, showViewer]);
 
   return (
     /*
@@ -174,20 +200,32 @@ export function Hero() {
         style={{ height: "100vh" }}
       >
         {/* Spline 3D background — zoom is driven by scroll progress */}
+        {/* Outer wrapper: handles the parallax scroll scale from the center */}
         <div
           ref={viewerContainerRef}
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-0 origin-center"
           style={{
             transform: `scale(${bgScale})`,
             willChange: "transform",
           }}
         >
-          {viewerReady &&
-            React.createElement("spline-viewer", {
-              url: SPLINE_SCENE_URL,
-              className: "h-full w-full",
-              style: { display: "block", width: "100%", height: "100%" },
-            })}
+          {/* Inner wrapper: handles the Mobile resolution optimization */}
+          {viewerReady && showViewer && (
+            <div
+              className={`origin-top-left ${isMobile ? "absolute top-0 left-0" : "relative w-full h-full"}`}
+              style={{
+                transform: isMobile ? "scale(2)" : "none",
+                width: isMobile ? "50%" : "100%",
+                height: isMobile ? "50%" : "100%",
+              }}
+            >
+              {React.createElement("spline-viewer", {
+                url: SPLINE_SCENE_URL,
+                className: "h-full w-full",
+                style: { display: "block", width: "100%", height: "100%" },
+              })}
+            </div>
+          )}
         </div>
 
         {/* Gradient overlay so text stays readable */}

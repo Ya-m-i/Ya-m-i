@@ -44,6 +44,7 @@ export default function RootLayout({
           src="https://unpkg.com/@splinetool/viewer@1.12.69/build/spline-viewer.js"
           strategy="afterInteractive"
           type="module"
+          crossOrigin="anonymous"
         />
         <PageLoader>
           <Suspense fallback={<LoadingScreen />}>{children}</Suspense>

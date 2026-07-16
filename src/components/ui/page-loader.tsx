@@ -7,11 +7,25 @@ export function PageLoader({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Minimal delay to ensure the animation is seen on refresh
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
+    let timer: NodeJS.Timeout;
+    
+    const finishLoading = () => {
+      // Force scroll to top so user always sees the Hero first
+      window.scrollTo(0, 0);
+      setIsLoading(false);
+      clearTimeout(timer);
+    };
+
+    // Wait until the 3D scene broadcasts its completion
+    window.addEventListener("hero-spline-loaded", finishLoading);
+    
+    // Safety Fallback: Always reveal page after 7.5 seconds in case of poor network
+    timer = setTimeout(finishLoading, 7500);
+    
+    return () => {
+      window.removeEventListener("hero-spline-loaded", finishLoading);
+      clearTimeout(timer);
+    };
   }, [])
 
   return (

@@ -227,7 +227,7 @@ export function TypingAnimation({
       )}
       {...props}
     >
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence>
         {chars.map((char, i) => (
           <motion.span
             key={`${currentWordIndex}-${i}-${char}`}

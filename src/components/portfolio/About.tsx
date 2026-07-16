@@ -74,6 +74,12 @@ function About() {
   const outerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
   const [splineLoaded, setSplineLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile once on mount
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   // Scroll-driven animation values
   const [textOpacity, setTextOpacity] = useState(1);
@@ -130,21 +136,21 @@ function About() {
         tTransform = `translate(calc(25vw - 220px + ${cX}vw), -50%) scale(${cScale})`;
       } else {
         // --- MOBILE MATH ---
-        // We center it horizontally: 50vw - 220px. 
-        // Vertically: Base center is 50%. We offset with vh changes.
-        let cY = 28; // Start lower in bottom half
-        let cScale = 0.55; // Much smaller on mobile screens
+        // Center horizontally: 50vw - 220px (half card width).
+        // Vertically: start well below the text block so there's no overlap.
+        let cY = 35; // Start far below center (in the lower third)
+        let cScale = 0.5; // Smaller on mobile screens
         
         if (rawProgress >= 0.25 && rawProgress < 0.5) {
           const t = Math.min(1, Math.max(0, p2));
-          cY = 28 - t * 28; // Slide up to center
-          cScale = 0.55 + t * 0.1; // Zoom slightly to 0.65
+          cY = 35 - t * 35; // Slide up to center (cY=0)
+          cScale = 0.5 + t * 0.15; // Zoom slightly to 0.65
         } else if (rawProgress >= 0.5 && rawProgress < 0.75) {
           const t = Math.min(1, Math.max(0, p3));
-          cY = 0 - t * 28; // Slide up to top half
-          cScale = 0.65 - t * 0.15; // Shrink it out of the way to 0.50
+          cY = 0 - t * 30; // Slide further up out of the way
+          cScale = 0.65 - t * 0.15; // Shrink to 0.50
         } else if (rawProgress >= 0.75) {
-          cY = -28;
+          cY = -30;
           cScale = 0.5;
         }
         tTransform = `translate(calc(50vw - 220px), calc(-50% + ${cY}vh)) scale(${cScale})`;
@@ -188,7 +194,7 @@ function About() {
 
     const blockInteraction = (e: Event) => {
       // Allow scroll but stop Spline from seeing it
-      if (e.type !== "wheel") {
+      if (e.type !== "wheel" && e.type !== "touchstart" && e.type !== "touchmove") {
         e.preventDefault();
       }
       e.stopPropagation();
@@ -196,76 +202,116 @@ function About() {
 
     canvas.addEventListener("wheel", blockInteraction, { capture: true, passive: true });
     canvas.addEventListener("mousedown", blockInteraction, { capture: true });
-    canvas.addEventListener("touchstart", blockInteraction, { capture: true });
+    canvas.addEventListener("touchstart", blockInteraction, { capture: true, passive: true });
+    canvas.addEventListener("touchmove", blockInteraction, { capture: true, passive: true });
 
     return () => {
       canvas.removeEventListener("wheel", blockInteraction, { capture: true });
       canvas.removeEventListener("mousedown", blockInteraction, { capture: true } as EventListenerOptions);
       canvas.removeEventListener("touchstart", blockInteraction, { capture: true } as EventListenerOptions);
+      canvas.removeEventListener("touchmove", blockInteraction, { capture: true } as EventListenerOptions);
     };
   }, []);
 
   useEffect(() => {
-    if (!splineLoaded) return;
+    if (!splineLoaded || isMobile) return; // Skip 3D entirely on mobile
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const app = new Application(canvas);
-    appRef.current = app;
+    let app: Application | null = null;
 
-    app
-      .load(ABOUT_SPLINE_SCENE_URL, BADGE_VARIABLES)
-      .then(() => {
-        app.setBackgroundColor("transparent");
-        app.setVariables({
-          name: BADGE_VARIABLES.name,
-          education: BADGE_VARIABLES.education,
-          location: BADGE_VARIABLES.location,
-          Name: BADGE_VARIABLES.name,
-          Education: BADGE_VARIABLES.education,
-          Location: BADGE_VARIABLES.location,
-          fullName: BADGE_VARIABLES.name,
-          userName: BADGE_VARIABLES.name,
-          degree: BADGE_VARIABLES.education,
-          address: BADGE_VARIABLES.location,
-          city: BADGE_VARIABLES.location,
-          place: BADGE_VARIABLES.location,
-          text1: BADGE_VARIABLES.name,
-          text2: BADGE_VARIABLES.education,
-          text3: BADGE_VARIABLES.location,
-        });
-        const sceneVars = app.getVariables();
-        for (const key of Object.keys(sceneVars)) {
-          const k = key.toLowerCase();
-          if (k.includes("name")) app.setVariable(key, BADGE_VARIABLES.name);
-          else if (k.includes("education") || k.includes("degree") || k.includes("school"))
-            app.setVariable(key, BADGE_VARIABLES.education);
-          else if (k.includes("location") || k.includes("address") || k.includes("city") || k.includes("place"))
-            app.setVariable(key, BADGE_VARIABLES.location);
-        }
-        const objects = app.getAllObjects();
-        for (const obj of objects) {
-          const mat = obj.material;
-          if (!mat?.layers) continue;
-          const textureLayer = mat.layers.find(
-            (l: { type: string }) => l.type === "texture"
-          );
-          if (textureLayer && "updateTexture" in textureLayer) {
-            const url =
-              typeof window !== "undefined"
-                ? `${window.location.origin}${withBasePath("/images/AboutMe.png")}`
-                : withBasePath("/images/AboutMe.png");
-            textureLayer.updateTexture(url).catch(() => {});
-            break;
+    let rafId: number | null = null;
+    const initApp = () => {
+      // Guard: ensure canvas has real pixel dimensions before creating WebGL context
+      // This prevents all "zero-size texture" and "framebuffer incomplete" errors
+      if (!canvas.clientWidth || !canvas.clientHeight) {
+        rafId = requestAnimationFrame(initApp);
+        return;
+      }
+      app = new Application(canvas);
+      appRef.current = app;
+
+      app
+        .load(ABOUT_SPLINE_SCENE_URL, BADGE_VARIABLES)
+        .then(() => {
+          app!.setBackgroundColor("transparent");
+
+          // Safely set only variables that actually exist in the Spline scene
+          const sceneVars = app!.getVariables();
+          for (const key of Object.keys(sceneVars)) {
+            const k = key.toLowerCase();
+            if (k.includes("name")) app!.setVariable(key, BADGE_VARIABLES.name);
+            else if (k.includes("education") || k.includes("degree") || k.includes("school"))
+              app!.setVariable(key, BADGE_VARIABLES.education);
+            else if (k.includes("location") || k.includes("address") || k.includes("city") || k.includes("place"))
+              app!.setVariable(key, BADGE_VARIABLES.location);
           }
-        }
-      })
-      .catch(console.error);
+
+          // Find the texture layer for the profile image
+          const objects = app!.getAllObjects();
+          for (const obj of objects) {
+            const mat = obj.material;
+            if (!mat?.layers) continue;
+            const textureLayer = mat.layers.find(
+              (l: { type: string }) => l.type === "texture"
+            );
+            if (textureLayer && "updateTexture" in textureLayer) {
+              const url =
+                typeof window !== "undefined"
+                  ? `${window.location.origin}${withBasePath("/images/AboutMe.png")}`
+                  : withBasePath("/images/AboutMe.png");
+
+              // Preload the image into browser cache FIRST, then update the texture.
+              // This prevents Three.js from receiving an incomplete 0-pixel image
+              // which would cause hundreds of WebGL GL_INVALID errors per frame.
+              const img = document.createElement('img');
+              img.crossOrigin = "anonymous";
+              img.onload = () => {
+                textureLayer.updateTexture(url).catch(() => {});
+              };
+              img.src = url;
+              break;
+            }
+          }
+        })
+        .catch(() => {});
+    };
+
+    let timer: NodeJS.Timeout | null = null;
+    if (window.innerWidth < 768) {
+      // Mobile: don't init Spline at all — we use a static card instead
+      return;
+    } else {
+      initApp();
+    }
 
     return () => {
-      app.dispose();
+      if (timer) clearTimeout(timer);
+      if (rafId) cancelAnimationFrame(rafId);
+      if (app) app.dispose();
       appRef.current = null;
     };
+  }, [splineLoaded]);
+
+  // Pause/resume the Spline render loop based on section visibility.
+  // This saves the GPU from rendering 60fps while the user is in a completely different section.
+  useEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        const app = appRef.current;
+        if (!app) return;
+        if (entry.isIntersecting) {
+          app.play();
+        } else {
+          app.stop();
+        }
+      },
+      { rootMargin: "100px", threshold: 0 }
+    );
+    obs.observe(outer);
+    return () => obs.disconnect();
   }, [splineLoaded]);
 
   return (
@@ -299,7 +345,7 @@ function About() {
 
           {/* ── PHASE 0 & 1: About text (title + paragraph) fades out ── */}
           <div
-            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-center md:items-center justify-start md:justify-end pt-16 md:pt-0 md:pr-16 lg:pr-24 z-30 px-6 sm:px-12 md:px-0"
+            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-start md:items-center justify-start md:justify-end pt-20 md:pt-0 md:pr-16 lg:pr-24 z-30 px-6 sm:px-12 md:px-0"
             style={{
               opacity: textOpacity,
               transition: "opacity 0.05s linear",
@@ -309,7 +355,7 @@ function About() {
               <h2 className="font-[family-name:var(--font-orbitron)] text-xl font-semibold text-white sm:text-3xl md:text-4xl">
                 About
               </h2>
-              <div className="mt-2 flex flex-col gap-2 sm:gap-4 md:min-h-72 sm:min-h-80 text-justify text-sm leading-relaxed text-white/90 sm:text-lg">
+              <div className="mt-2 flex flex-col gap-2 sm:gap-3 md:min-h-72 text-justify text-[13px] leading-relaxed text-white/90 sm:text-lg">
                 <p>
                   I build projects to push my limits and enhance my skills, exploring new technologies and design approaches along the way. Every POS system, blockchain app, HRIS platform, or UI/UX design I create is a step closer to my ultimate goal: developing a system that can solve real problems and make a meaningful impact.
                 </p>
@@ -320,7 +366,7 @@ function About() {
             </div>
           </div>
 
-          {/* ── 3D CARD: animates position & scale across phases ── */}
+          {/* ── 3D CARD (desktop) / STATIC CARD (mobile): animates position & scale across phases ── */}
           <div
             className="absolute z-20 left-0 top-1/2 w-[440px] h-[520px]"
             style={{
@@ -329,20 +375,58 @@ function About() {
               willChange: "transform",
             }}
           >
-            <canvas
-              ref={canvasRef}
-              style={{
-                width: "100%",
-                height: "100%",
-                background: "transparent",
-                display: "block",
-              }}
-            />
+            {isMobile ? (
+              /* ── MOBILE: Beautiful static card — zero WebGL, zero lag ── */
+              <div className="relative w-[280px] h-[380px] mx-auto rounded-2xl border border-white/15 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black overflow-hidden shadow-2xl shadow-black/60 backdrop-blur-sm">
+                {/* Profile image */}
+                <div className="relative w-full h-[220px] overflow-hidden">
+                  <Image
+                    src={withBasePath("/images/AboutMe.png")}
+                    alt="Kyzz Shane Pacon"
+                    fill
+                    className="object-cover object-top"
+                    sizes="280px"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-950/90" />
+                </div>
+                {/* Info fields */}
+                <div className="flex flex-col gap-2 px-5 pt-3 pb-4">
+                  <div>
+                    <p className="text-[9px] font-medium tracking-[0.2em] text-white/35 uppercase">Name</p>
+                    <p className="font-[family-name:var(--font-orbitron)] text-sm font-semibold text-white tracking-wide">{BADGE_VARIABLES.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-medium tracking-[0.2em] text-white/35 uppercase">Education</p>
+                    <p className="font-[family-name:var(--font-orbitron)] text-[11px] font-medium text-white/80 tracking-wide">{BADGE_VARIABLES.education}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-medium tracking-[0.2em] text-white/35 uppercase">Location</p>
+                    <p className="font-[family-name:var(--font-orbitron)] text-[11px] font-medium text-white/80 tracking-wide">{BADGE_VARIABLES.location}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* ── DESKTOP: Full 3D Spline canvas ── */
+              <div className="relative w-full h-full flex items-center justify-center">
+                <canvas
+                  ref={canvasRef}
+                  width={440}
+                  height={520}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    background: "transparent",
+                    display: "block",
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* ── WORK EXPERIENCE: fades in on the LEFT while card moves right ── */}
           <div
-            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-center justify-end md:justify-start pb-8 md:pb-0 md:pl-16 lg:pl-24 z-30 px-6 sm:px-12 md:px-0"
+            className="pointer-events-none absolute inset-0 flex flex-col md:flex-row items-center justify-end md:justify-start pb-4 md:pb-0 md:pl-16 lg:pl-24 z-30 px-6 sm:px-12 md:px-0"
             style={{
               opacity: expOpacity,
               transition: "opacity 0.08s linear",

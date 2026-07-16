@@ -3,7 +3,7 @@
 import * as React from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { EmblaOptionsType } from "embla-carousel";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 export interface MotionCarouselProps {
@@ -108,27 +108,25 @@ export function MotionCarousel({
 
       {/* Pill-style pagination dots */}
       <div className="mt-6 flex justify-center gap-2">
-        <AnimatePresence mode="wait">
-          {slides.map((_, index) => (
-            <motion.button
-              key={index}
-              type="button"
-              aria-label={`Go to slide ${index + 1}`}
-              className={cn(
-                "h-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-                selectedIndex === index
-                  ? "bg-white"
-                  : "bg-white/40 hover:bg-white/60"
-              )}
-              initial={false}
-              animate={{
-                width: selectedIndex === index ? 24 : 8,
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              onClick={() => scrollTo(index)}
-            />
-          ))}
-        </AnimatePresence>
+        {slides.map((_, index) => (
+          <motion.button
+            key={index}
+            type="button"
+            aria-label={`Go to slide ${index + 1}`}
+            className={cn(
+              "h-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+              selectedIndex === index
+                ? "bg-white"
+                : "bg-white/40 hover:bg-white/60"
+            )}
+            initial={false}
+            animate={{
+              width: selectedIndex === index ? 24 : 8,
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            onClick={() => scrollTo(index)}
+          />
+        ))}
       </div>
     </div>
   );
